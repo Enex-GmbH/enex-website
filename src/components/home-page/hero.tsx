@@ -3,10 +3,9 @@
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import { Calendar, CarFront, MapPin, Search, CalendarDays } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { useState } from "react";
+import { CarFront, MapPin, Search } from "lucide-react";
 
 const HeroBlob = () => {
     return (
