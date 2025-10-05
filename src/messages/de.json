@@ -1,0 +1,18 @@
+{
+    "HOME": {
+        "header": {
+            "nav": {
+                "pricing": "Preise",
+                "coverage": "Deckung",
+                "corporate": "Corporate"
+            }
+        },
+        "hero": {
+            "title": "Sauber. Smart. Mühelos.",
+            "description": "Erlebe die nächste Generation der Autopflege – überall, wo du bist.",
+            "location": "Standort",
+            "carType": "Fahrzeugtyp",
+            "search": "Suchen"
+        }
+    }
+}
