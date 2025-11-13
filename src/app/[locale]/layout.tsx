@@ -2,7 +2,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import { i18n } from '@/i18n';
-import Header from '@/components/home-page/header';
+import Header from '@/components/shared/header';
 
 type Props = {
   children: ReactNode;

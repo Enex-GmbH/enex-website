@@ -12,7 +12,24 @@
             "description": "Erlebe die nächste Generation der Autopflege – überall, wo du bist.",
             "location": "Standort",
             "carType": "Fahrzeugtyp",
-            "search": "Suchen"
+            "search": "Suchen",
+            "date": "Datum"
+        },
+        "plans": {
+            "title": "Ihr Auto. Unser Service.",
+            "description": "Wir bringen die Fahrzeugpflege zu Ihnen – schnell, flexibel, professionell.",
+            "basicPlan": {
+                "title": "Basis-Paket",
+                "description": "Perfekt für den gelegentlichen Gebrauch mit grundlegenden Reinigungsdiensten"
+            },
+            "premiumPlan": {
+                "title": "Premium-Paket",
+                "description": "Umfassende Pflege mit erweiterten Reinigungsdiensten und Prioritätsplanung"
+            },
+            "exclusivePlan": {
+                "title": "Exklusiv-Paket",
+                "description": "Erstklassiger Service mit Premium-Produkten und VIP-Behandlung"
+            }
         }
     }
 }

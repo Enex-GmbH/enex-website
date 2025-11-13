@@ -5,7 +5,11 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { useState } from "react";
-import { CarFront, MapPin, Search } from "lucide-react";
+import { CalendarDays, CarFront, MapPin, Search } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Calendar } from "../ui/calendar";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 const HeroBlob = () => {
     return (
@@ -24,6 +28,7 @@ function Hero() {
     const [selectedPlace, setSelectedPlace] = useState("");
     const [carType, setCarType] = useState("");
     const [date, setDate] = useState<Date | undefined>(undefined);
+    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
     return (
         <section>
@@ -72,8 +77,34 @@ function Hero() {
                                 </Select>
                             </div>
 
+                            {/* Date Picker */}
+                            <div className="flex items-center gap-2 w-full">
+                                <CalendarDays className="h-6 w-6 min-w-6 text-enex-primary" />
+                                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            className="w-[calc(100%-32px)] !h-12 justify-start text-left font-normal text-gray-700"
+                                        >
+                                            {date ? format(date, "PPP", { locale: de }) : t("date")}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                            mode="single"
+                                            selected={date}
+                                            onSelect={(selectedDate) => {
+                                                setDate(selectedDate);
+                                                setIsCalendarOpen(false);
+                                            }}
+                                            locale={de}
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+
                             {/* Search Button */}
-                            <Button className="mt-2 md:mt-0 md:ml-2 flex items-center gap-2 text-white rounded-b-sm bg-enex-primary hover:bg-enex-hover">
+                            <Button className="mt-2 md:mt-0 h-12 flex items-center gap-2 text-white rounded-b-sm bg-enex-primary hover:bg-enex-hover">
                                 <Search className="w-4 h-4" />
                                 {t("search")}
                             </Button>
