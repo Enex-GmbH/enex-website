@@ -20,15 +20,44 @@
             "description": "Wir bringen die Fahrzeugpflege zu Ihnen – schnell, flexibel, professionell.",
             "basicPlan": {
                 "title": "Basis-Paket",
-                "description": "Perfekt für den gelegentlichen Gebrauch mit grundlegenden Reinigungsdiensten"
+                "description": "Schnelle persönliche Wäsche für Einzelpersonen",
+                "features": {
+                    "feature1": "Außenhandwäsche",
+                    "feature2": "Innenraumsaugen & Fenster",
+                    "feature3": "Reifen- & Felgenreinigung"
+                },
+                "duration": "Dauer: ~4 Stunden",
+                "for": "Für: 1 Privatauto",
+                "price": "Ab €60 (Kleinwagen)",
+                "ideal": "Ideal für: regelmäßige Wartungsreinigung"
             },
             "premiumPlan": {
                 "title": "Premium-Paket",
-                "description": "Umfassende Pflege mit erweiterten Reinigungsdiensten und Prioritätsplanung"
+                "description": "Tiefenreinigung & Detailing für Einzelpersonen",
+                "features": {
+                    "feature1": "Alles aus dem Basis-Paket",
+                    "feature2": "Wachs- & Polierfinish",
+                    "feature3": "Innenraum-Tiefenreinigung (Armaturenbrett, Konsole, Sitze)",
+                    "feature4": "Reifenglanz + Fensterversiegelung"
+                },
+                "duration": "Dauer: ~4 Stunden",
+                "for": "Für: 1 Auto",
+                "price": "Ab €90 (Mittelklassewagen)",
+                "ideal": "Ideal für: vierteljährliche Tiefenreinigung"
             },
             "exclusivePlan": {
                 "title": "Exklusiv-Paket",
-                "description": "Erstklassiger Service mit Premium-Produkten und VIP-Behandlung"
+                "description": "Für Unternehmen mit mehreren Fahrzeugen konzipiert",
+                "features": {
+                    "feature1": "Professionelles Detailing für mehrere Firmenfahrzeuge",
+                    "feature2": "Flottenmanagement-Terminplanung",
+                    "feature3": "Prioritärer Support & flexible Zeitfenster",
+                    "feature4": "Individuelle Preisgestaltung pro Fahrzeug / Paket"
+                },
+                "duration": "Dauer: bis zu 8 Stunden oder Ganztagesservice",
+                "for": "Für: Unternehmen & Organisationen",
+                "ideal": "Ideal für: Fuhrparkmanagement & Firmenwagen",
+                "cta": "Corporate-Angebot anfordern"
             }
         }
     }
