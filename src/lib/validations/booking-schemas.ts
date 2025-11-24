@@ -1,0 +1,70 @@
+import { z } from 'zod';
+
+// Step 1: Location Schema
+export const locationSchema = z.object({
+  postalCode: z.string().min(5, 'Bitte geben Sie eine gültige Postleitzahl ein'),
+  address: z.string().min(5, 'Bitte geben Sie eine vollständige Adresse ein'),
+  zone: z.enum(['inside', 'outside']),
+  hasWater: z.boolean().default(false),
+  hasElectricity: z.boolean().default(false),
+});
+
+export type LocationFormData = z.infer<typeof locationSchema>;
+
+// Step 2: Package Schema
+export const packageSchema = z.object({
+  carType: z.enum(['Sedan', 'SUV', 'Hatchback', 'Coupe'], {
+    required_error: 'Bitte wählen Sie einen Fahrzeugtyp',
+  }),
+  selectedPlan: z.enum(['basic', 'premium', 'exclusive'], {
+    required_error: 'Bitte wählen Sie ein Paket',
+  }),
+  addOns: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    priceEur: z.number(),
+    priceDkr: z.number(),
+    durationMinutes: z.number(),
+  })).default([]),
+});
+
+export type PackageFormData = z.infer<typeof packageSchema>;
+
+// Step 3: Date/Time Schema
+export const dateTimeSchema = z.object({
+  date: z.date({
+    required_error: 'Bitte wählen Sie ein Datum',
+  }),
+  timeSlot: z.string().min(1, 'Bitte wählen Sie eine Uhrzeit'),
+});
+
+export type DateTimeFormData = z.infer<typeof dateTimeSchema>;
+
+// Step 4: Contact Details Schema
+export const contactDetailsSchema = z.object({
+  firstName: z.string().min(2, 'Vorname ist erforderlich'),
+  lastName: z.string().min(2, 'Nachname ist erforderlich'),
+  email: z.string().email('Bitte geben Sie eine gültige E-Mail-Adresse ein'),
+  phone: z.string().min(10, 'Bitte geben Sie eine gültige Telefonnummer ein'),
+  licensePlate: z.string().optional(),
+  carMake: z.string().optional(),
+  parkingNote: z.string().optional(),
+});
+
+export type ContactDetailsFormData = z.infer<typeof contactDetailsSchema>;
+
+// Step 5: Payment Schema
+export const paymentSchema = z.object({
+  couponCode: z.string().optional(),
+  agreedToTerms: z.boolean().refine((val) => val === true, {
+    message: 'Sie müssen den AGB zustimmen',
+  }),
+  agreedToPrivacy: z.boolean().refine((val) => val === true, {
+    message: 'Sie müssen der Datenschutzerklärung zustimmen',
+  }),
+  agreedToService: z.boolean().refine((val) => val === true, {
+    message: 'Sie müssen dem Service innerhalb von 14 Tagen zustimmen',
+  }),
+});
+
+export type PaymentFormData = z.infer<typeof paymentSchema>;

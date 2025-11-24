@@ -10,6 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Calendar } from "../ui/calendar";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { useRouter } from "next/navigation";
+import { useBookingStore, CarType } from "@/store/booking-store";
 
 const HeroBlob = () => {
     return (
@@ -25,10 +27,33 @@ const HeroBlob = () => {
 
 function Hero() {
     const t = useTranslations("HOME.hero");
+    const router = useRouter();
+    const { setPackage, setDateTime } = useBookingStore();
     const [selectedPlace, setSelectedPlace] = useState("");
     const [carType, setCarType] = useState("");
     const [date, setDate] = useState<Date | undefined>(undefined);
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+    const handleSearch = () => {
+        // Pre-fill booking store with hero form data
+        if (carType) {
+            setPackage({
+                carType: carType as CarType,
+                selectedPlan: 'basic', // Default plan
+                addOns: [],
+            });
+        }
+
+        if (date) {
+            setDateTime({
+                date: date,
+                timeSlot: '09:30', // Default time slot
+            });
+        }
+
+        // Navigate to booking flow
+        router.push('/de/booking/location');
+    };
 
     return (
         <section>
@@ -104,7 +129,10 @@ function Hero() {
                             </div>
 
                             {/* Search Button */}
-                            <Button className="mt-2 md:mt-0 h-12 flex items-center gap-2 text-white rounded-b-sm bg-enex-primary hover:bg-enex-hover">
+                            <Button
+                                onClick={handleSearch}
+                                className="mt-2 md:mt-0 h-12 flex items-center gap-2 text-white rounded-b-sm bg-enex-primary hover:bg-enex-hover"
+                            >
                                 <Search className="w-4 h-4" />
                                 {t("search")}
                             </Button>

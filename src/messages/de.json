@@ -59,6 +59,106 @@
                 "ideal": "Ideal für: Fuhrparkmanagement & Firmenwagen",
                 "cta": "Corporate-Angebot anfordern"
             }
+        },
+        "booking": {
+            "stepper": {
+                "location": "Standort",
+                "package": "Paket & Extras",
+                "datetime": "Datum/Uhrzeit",
+                "details": "Details",
+                "payment": "Zahlung"
+            },
+            "location": {
+                "title": "Buchung - Schritt 1 von 5",
+                "postalCode": "Postleitzahl",
+                "address": "Adresse (Autovervollständigung)",
+                "zone": "Zone",
+                "insideZone": "Innenstadt / Außenring",
+                "outsideZone": "Außenbereich",
+                "tollFee": "Mautgebühr",
+                "hasWater": "Wasser vorhanden",
+                "hasElectricity": "Strom vorhanden",
+                "continue": "Weiter"
+            },
+            "package": {
+                "title": "Buchung - Schritt 2 von 5",
+                "carType": "Fahrzeugtyp",
+                "selectCarType": "Fahrzeugtyp wählen",
+                "selectPackage": "Paket auswählen",
+                "addOns": "Extras",
+                "back": "Zurück",
+                "continue": "Weiter"
+            },
+            "datetime": {
+                "title": "Buchung - Schritt 3 von 5",
+                "selectDate": "Datum auswählen",
+                "selectTime": "Uhrzeit auswählen",
+                "available": "Verfügbar",
+                "unavailable": "Nicht verfügbar",
+                "back": "Zurück",
+                "continue": "Weiter"
+            },
+            "details": {
+                "title": "Buchung - Schritt 4 von 5",
+                "firstName": "Vorname",
+                "lastName": "Nachname",
+                "email": "E-Mail",
+                "phone": "Telefon",
+                "licensePlate": "Kennzeichen (optional)",
+                "carMake": "Marke/Modell",
+                "parkingNote": "Hinweis zur Adresse (Parken/Zugang)",
+                "back": "Zurück",
+                "continue": "Weiter"
+            },
+            "payment": {
+                "title": "Buchung - Schritt 5 von 5",
+                "summary": "Zusammenfassung",
+                "cardPayment": "Kartenzahlung (3DS/SCA)",
+                "securePayment": "Zahlung wird sicher über 3D Secure verarbeitet",
+                "couponCode": "Gutscheincode",
+                "applyCoupon": "Anwenden",
+                "termsAndConditions": "AGB & Datenschutz",
+                "cancellationPolicy": "Ich stimme der Storno-/Verschiebungsrichtlinie zu",
+                "serviceStart": "Ich stimme ausdrücklich zu, dass der Service innerhalb von 14 Tagen beginnt",
+                "back": "Zurück",
+                "completePayment": "Zahlung abschließen",
+                "processing": "Wird verarbeitet..."
+            },
+            "confirmation": {
+                "title": "Ihre Buchung wurde bestätigt!",
+                "reference": "Buchungsnummer",
+                "summary": "Zusammenfassung",
+                "addToCalendar": "Zum Kalender hinzufügen (.ics)",
+                "manageBooking": "Buchung verwalten",
+                "preparation": "Vorbereitung: Parkplatz, Steckdose, Wertsachen mitnehmen.",
+                "newBooking": "Neue Buchung starten"
+            },
+            "summary": {
+                "title": "Zusammenfassung",
+                "package": "Paket",
+                "addOns": "Extras",
+                "tollFee": "Mautgebühr",
+                "vehicle": "Fahrzeug",
+                "address": "Adresse",
+                "dateTime": "Datum/Uhrzeit",
+                "total": "GESAMT (inkl. MwSt.)",
+                "emptyMessage": "Bitte füllen Sie das Formular aus, um Ihre Buchung abzuschließen"
+            },
+            "errors": {
+                "postalCodeRequired": "Bitte geben Sie eine gültige Postleitzahl ein",
+                "addressRequired": "Bitte geben Sie eine vollständige Adresse ein",
+                "carTypeRequired": "Bitte wählen Sie einen Fahrzeugtyp",
+                "packageRequired": "Bitte wählen Sie ein Paket",
+                "dateRequired": "Bitte wählen Sie ein Datum",
+                "timeRequired": "Bitte wählen Sie eine Uhrzeit",
+                "firstNameRequired": "Vorname ist erforderlich",
+                "lastNameRequired": "Nachname ist erforderlich",
+                "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+                "phoneInvalid": "Bitte geben Sie eine gültige Telefonnummer ein",
+                "termsRequired": "Sie müssen den AGB zustimmen",
+                "privacyRequired": "Sie müssen der Datenschutzerklärung zustimmen",
+                "serviceRequired": "Sie müssen dem Service innerhalb von 14 Tagen zustimmen"
+            }
         }
     }
 }
