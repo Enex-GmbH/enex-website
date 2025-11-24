@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Menu, X } from "lucide-react"
-import { useTranslations } from "next-intl"
+import * as React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function Navigation() {
-  const [open, setOpen] = React.useState(false)
-  const t = useTranslations("HOME.header.nav")
+  const [open, setOpen] = React.useState(false);
+  const t = useTranslations("HOME.header.nav");
 
   const navItems = [
     { href: "/pricing", label: t("pricing") },
     { href: "/coverage", label: t("coverage") },
     { href: "/corporate", label: t("corporate") },
-  ]
+  ];
 
   return (
     <>
@@ -75,5 +75,5 @@ export function Navigation() {
         </div>
       )}
     </>
-  )
+  );
 }

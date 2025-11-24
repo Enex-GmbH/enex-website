@@ -21,9 +21,7 @@ export default function BookingSummary() {
             <Car className="w-4 h-4" />
             <span>Paket:</span>
           </div>
-          <p className="font-medium capitalize">
-            {pkg?.selectedPlan || "-"}
-          </p>
+          <p className="font-medium capitalize">{pkg?.selectedPlan || "-"}</p>
         </div>
 
         {/* Add-ons */}
@@ -45,7 +43,9 @@ export default function BookingSummary() {
           <div>
             <div className="text-sm text-gray-600 mb-1">Yol Ücreti:</div>
             <p className="font-medium">
-              {location.zone === 'inside' ? '0€' : `${location.tollFeeEur}€ / ${location.tollFeeDkr}kr`}
+              {location.zone === "inside"
+                ? "0€"
+                : `${location.tollFeeEur}€ / ${location.tollFeeDkr}kr`}
             </p>
           </div>
         )}

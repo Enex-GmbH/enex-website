@@ -2,7 +2,10 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { dateTimeSchema, DateTimeFormData } from "@/lib/validations/booking-schemas";
+import {
+  dateTimeSchema,
+  DateTimeFormData,
+} from "@/lib/validations/booking-schemas";
 import { useBookingStore } from "@/store/booking-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,27 +17,28 @@ import { format, addDays, startOfWeek } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
-const timeSlots = [
-  "09:30", "11:00", "13:00", "15:00", "17:00",
-];
+const timeSlots = ["09:30", "11:00", "13:00", "15:00", "17:00"];
 
 // Mock availability data (in real app, fetch from backend)
 const getTimeSlotAvailability = (date: Date, slot: string) => {
   // Simulate some slots being unavailable
   const dateStr = format(date, "yyyy-MM-dd");
-  const unavailable = [
-    `${dateStr}-11:00`,
-    `${dateStr}-15:00`,
-  ];
+  const unavailable = [`${dateStr}-11:00`, `${dateStr}-15:00`];
   return !unavailable.includes(`${dateStr}-${slot}`);
 };
 
 export default function DateTimeStep() {
   const router = useRouter();
   const { dateTime, setDateTime, isStepComplete } = useBookingStore();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(dateTime?.date);
-  const [selectedTime, setSelectedTime] = useState<string | undefined>(dateTime?.timeSlot);
-  const [weekStart, setWeekStart] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    dateTime?.date
+  );
+  const [selectedTime, setSelectedTime] = useState<string | undefined>(
+    dateTime?.timeSlot
+  );
+  const [weekStart, setWeekStart] = useState<Date>(
+    startOfWeek(new Date(), { weekStartsOn: 1 })
+  );
 
   const {
     setValue,
@@ -97,7 +101,10 @@ export default function DateTimeStep() {
 
             <div className="flex gap-2 overflow-x-auto">
               {weekDays.map((day) => {
-                const isSelected = selectedDate && format(selectedDate, "yyyy-MM-dd") === format(day, "yyyy-MM-dd");
+                const isSelected =
+                  selectedDate &&
+                  format(selectedDate, "yyyy-MM-dd") ===
+                    format(day, "yyyy-MM-dd");
                 const dayLabel = format(day, "EEE", { locale: de });
                 const dateLabel = format(day, "d");
 
@@ -138,7 +145,9 @@ export default function DateTimeStep() {
         {/* Time Slots */}
         {selectedDate && (
           <div>
-            <label className="block text-sm font-medium mb-3">Saat Seçimi</label>
+            <label className="block text-sm font-medium mb-3">
+              Saat Seçimi
+            </label>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {timeSlots.map((slot) => {
                 const isAvailable = getTimeSlotAvailability(selectedDate, slot);
@@ -152,9 +161,14 @@ export default function DateTimeStep() {
                     disabled={!isAvailable}
                     className={cn(
                       "p-3 rounded-lg border-2 font-medium transition-colors",
-                      isSelected && isAvailable && "border-enex-primary bg-enex-primary text-white",
-                      !isSelected && isAvailable && "border-gray-200 hover:border-enex-primary",
-                      !isAvailable && "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                      isSelected &&
+                        isAvailable &&
+                        "border-enex-primary bg-enex-primary text-white",
+                      !isSelected &&
+                        isAvailable &&
+                        "border-gray-200 hover:border-enex-primary",
+                      !isAvailable &&
+                        "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
                     )}
                   >
                     {slot} {!isAvailable && "(disabled)"}
@@ -164,7 +178,9 @@ export default function DateTimeStep() {
               })}
             </div>
             {errors.timeSlot && (
-              <p className="text-red-500 text-sm mt-2">{errors.timeSlot.message}</p>
+              <p className="text-red-500 text-sm mt-2">
+                {errors.timeSlot.message}
+              </p>
             )}
           </div>
         )}

@@ -2,7 +2,10 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { locationSchema, LocationFormData } from "@/lib/validations/booking-schemas";
+import {
+  locationSchema,
+  LocationFormData,
+} from "@/lib/validations/booking-schemas";
 import { useBookingStore } from "@/store/booking-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -74,7 +77,10 @@ export default function LocationStep() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Postal Code */}
         <div>
-          <label htmlFor="postalCode" className="block text-sm font-medium mb-2">
+          <label
+            htmlFor="postalCode"
+            className="block text-sm font-medium mb-2"
+          >
             PLZ
           </label>
           <Input
@@ -85,7 +91,9 @@ export default function LocationStep() {
             className={errors.postalCode ? "border-red-500" : ""}
           />
           {errors.postalCode && (
-            <p className="text-red-500 text-sm mt-1">{errors.postalCode.message}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.postalCode.message}
+            </p>
           )}
         </div>
 
@@ -102,7 +110,9 @@ export default function LocationStep() {
             className={errors.address ? "border-red-500" : ""}
           />
           {errors.address && (
-            <p className="text-red-500 text-sm mt-1">{errors.address.message}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.address.message}
+            </p>
           )}
         </div>
 
@@ -112,7 +122,8 @@ export default function LocationStep() {
             <MapPin className="w-5 h-5 text-enex-primary flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium">
-                Bölge: {zone === "inside" ? "Çekirdek / Dış halka" : "Dış bölge"}
+                Bölge:{" "}
+                {zone === "inside" ? "Çekirdek / Dış halka" : "Dış bölge"}
               </p>
               <p className="text-sm text-gray-600 mt-1">
                 Yol ücreti: {tollFee.eur}€ / {tollFee.dkr}₺

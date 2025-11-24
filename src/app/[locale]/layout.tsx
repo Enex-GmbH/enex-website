@@ -1,8 +1,9 @@
-import { NextIntlClientProvider } from 'next-intl';
-import { ReactNode } from 'react';
-import { notFound } from 'next/navigation';
-import { i18n } from '@/i18n';
-import Header from '@/components/shared/header';
+import { NextIntlClientProvider } from "next-intl";
+import { ReactNode } from "react";
+import { notFound } from "next/navigation";
+import { i18n } from "@/i18n";
+import Header from "@/components/shared/header";
+import { Locale } from "@/i18n";
 
 type Props = {
   children: ReactNode;
@@ -12,7 +13,7 @@ type Props = {
 export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params;
 
-  if (!i18n.locales.includes(locale as any)) {
+  if (!i18n.locales.includes(locale as Locale)) {
     notFound();
   }
 

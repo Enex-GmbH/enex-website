@@ -2,11 +2,20 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { packageSchema, PackageFormData } from "@/lib/validations/booking-schemas";
+import {
+  packageSchema,
+  PackageFormData,
+} from "@/lib/validations/booking-schemas";
 import { useBookingStore, AddOn, CarType } from "@/store/booking-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { CheckCircle2, Car } from "lucide-react";
@@ -49,7 +58,9 @@ export default function PackageStep() {
   const router = useRouter();
   const t = useTranslations("HOME.plans");
   const { package: pkg, setPackage, isStepComplete } = useBookingStore();
-  const [selectedAddOns, setSelectedAddOns] = useState<AddOn[]>(pkg?.addOns || []);
+  const [selectedAddOns, setSelectedAddOns] = useState<AddOn[]>(
+    pkg?.addOns || []
+  );
 
   const {
     setValue,
@@ -107,7 +118,9 @@ export default function PackageStep() {
 
   return (
     <Card className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Rezervasyon 2/5 - Araç & Paket & Ekstralar</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        Rezervasyon 2/5 - Araç & Paket & Ekstralar
+      </h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Car Type Selection */}
@@ -127,7 +140,9 @@ export default function PackageStep() {
             </SelectContent>
           </Select>
           {errors.carType && (
-            <p className="text-red-500 text-sm mt-1">{errors.carType.message}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.carType.message}
+            </p>
           )}
         </div>
 
@@ -138,7 +153,9 @@ export default function PackageStep() {
             {plans.map((plan) => (
               <div
                 key={plan.id}
-                onClick={() => handlePlanSelect(plan.id as "basic" | "premium" | "exclusive")}
+                onClick={() =>
+                  handlePlanSelect(plan.id as "basic" | "premium" | "exclusive")
+                }
                 className={cn(
                   "border-2 rounded-lg p-4 cursor-pointer transition-all hover:border-enex-primary",
                   selectedPlan === plan.id
@@ -147,7 +164,9 @@ export default function PackageStep() {
                 )}
               >
                 <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-bold text-lg">{t(`${plan.key}.title`)}</h3>
+                  <h3 className="font-bold text-lg">
+                    {t(`${plan.key}.title`)}
+                  </h3>
                   {selectedPlan === plan.id && (
                     <CheckCircle2 className="w-5 h-5 text-enex-primary" />
                   )}
@@ -156,14 +175,18 @@ export default function PackageStep() {
                   <p>Seçenekler</p>
                   <p>Süre</p>
                   <p className="font-semibold text-gray-900">
-                    KDV dahil fiyat<br />[Seç]
+                    KDV dahil fiyat
+                    <br />
+                    [Seç]
                   </p>
                 </div>
               </div>
             ))}
           </div>
           {errors.selectedPlan && (
-            <p className="text-red-500 text-sm mt-1">{errors.selectedPlan.message}</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.selectedPlan.message}
+            </p>
           )}
         </div>
 
@@ -183,7 +206,7 @@ export default function PackageStep() {
                     <input
                       type="checkbox"
                       checked={!!isSelected}
-                      onChange={() => { }}
+                      onChange={() => {}}
                       className="w-4 h-4"
                     />
                     <span className="text-sm">{addOn.name}</span>

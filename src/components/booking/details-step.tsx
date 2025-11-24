@@ -2,7 +2,10 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { contactDetailsSchema, ContactDetailsFormData } from "@/lib/validations/booking-schemas";
+import {
+  contactDetailsSchema,
+  ContactDetailsFormData,
+} from "@/lib/validations/booking-schemas";
 import { useBookingStore } from "@/store/booking-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -12,7 +15,8 @@ import { useEffect } from "react";
 
 export default function DetailsStep() {
   const router = useRouter();
-  const { contactDetails, setContactDetails, isStepComplete } = useBookingStore();
+  const { contactDetails, setContactDetails, isStepComplete } =
+    useBookingStore();
 
   const {
     register,
@@ -50,7 +54,10 @@ export default function DetailsStep() {
         {/* Name Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium mb-2">
+            <label
+              htmlFor="firstName"
+              className="block text-sm font-medium mb-2"
+            >
               Ad
             </label>
             <Input
@@ -60,12 +67,17 @@ export default function DetailsStep() {
               className={errors.firstName ? "border-red-500" : ""}
             />
             {errors.firstName && (
-              <p className="text-red-500 text-sm mt-1">{errors.firstName.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.firstName.message}
+              </p>
             )}
           </div>
 
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium mb-2">
+            <label
+              htmlFor="lastName"
+              className="block text-sm font-medium mb-2"
+            >
               Soyad
             </label>
             <Input
@@ -75,7 +87,9 @@ export default function DetailsStep() {
               className={errors.lastName ? "border-red-500" : ""}
             />
             {errors.lastName && (
-              <p className="text-red-500 text-sm mt-1">{errors.lastName.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.lastName.message}
+              </p>
             )}
           </div>
         </div>
@@ -114,14 +128,13 @@ export default function DetailsStep() {
 
         {/* License Plate (Optional) */}
         <div>
-          <label htmlFor="licensePlate" className="block text-sm font-medium mb-2">
+          <label
+            htmlFor="licensePlate"
+            className="block text-sm font-medium mb-2"
+          >
             Plaka (opsiyonel)
           </label>
-          <Input
-            id="licensePlate"
-            type="text"
-            {...register("licensePlate")}
-          />
+          <Input id="licensePlate" type="text" {...register("licensePlate")} />
         </div>
 
         {/* Car Make/Model (Optional) */}
@@ -139,7 +152,10 @@ export default function DetailsStep() {
 
         {/* Parking/Access Note */}
         <div>
-          <label htmlFor="parkingNote" className="block text-sm font-medium mb-2">
+          <label
+            htmlFor="parkingNote"
+            className="block text-sm font-medium mb-2"
+          >
             Adres notu (park/erişim)
           </label>
           <textarea
@@ -154,12 +170,7 @@ export default function DetailsStep() {
         {/* Water & Electricity Availability */}
         <div className="bg-gray-50 p-4 rounded-lg space-y-2">
           <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="hasWater"
-              disabled
-              className="w-4 h-4"
-            />
+            <input type="checkbox" id="hasWater" disabled className="w-4 h-4" />
             <label htmlFor="hasWater" className="text-sm">
               Su var
             </label>

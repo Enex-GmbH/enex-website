@@ -2,7 +2,10 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { paymentSchema, PaymentFormData } from "@/lib/validations/booking-schemas";
+import {
+  paymentSchema,
+  PaymentFormData,
+} from "@/lib/validations/booking-schemas";
 import { useBookingStore } from "@/store/booking-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,7 +27,7 @@ export default function PaymentStep() {
     payment,
     setPayment,
     isStepComplete,
-    getTotalPrice
+    getTotalPrice,
   } = useBookingStore();
 
   const totalPrice = getTotalPrice();
@@ -67,17 +70,22 @@ export default function PaymentStep() {
 
   return (
     <Card className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Rezervasyon 5/5 - Ödeme & Onaylar</h1>
+      <h1 className="text-2xl font-bold mb-6">
+        Rezervasyon 5/5 - Ödeme & Onaylar
+      </h1>
 
       {/* Order Summary */}
       <div className="mb-6 bg-gray-50 p-4 rounded-lg">
-        <h2 className="font-semibold mb-3">Özet: Tarih/Saat, Adres, Paket, Toplam (KDV dahil)</h2>
+        <h2 className="font-semibold mb-3">
+          Özet: Tarih/Saat, Adres, Paket, Toplam (KDV dahil)
+        </h2>
         <div className="space-y-2 text-sm">
           {dateTime && (
             <div className="flex justify-between">
               <span className="text-gray-600">Tarih/Saat:</span>
               <span className="font-medium">
-                {format(dateTime.date, "PPP", { locale: de })} - {dateTime.timeSlot}
+                {format(dateTime.date, "PPP", { locale: de })} -{" "}
+                {dateTime.timeSlot}
               </span>
             </div>
           )}
@@ -93,13 +101,17 @@ export default function PaymentStep() {
             <>
               <div className="flex justify-between">
                 <span className="text-gray-600">Paket:</span>
-                <span className="font-medium capitalize">{pkg.selectedPlan}</span>
+                <span className="font-medium capitalize">
+                  {pkg.selectedPlan}
+                </span>
               </div>
 
               {pkg.addOns.length > 0 && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">Add-ons:</span>
-                  <span className="font-medium">{pkg.addOns.map(a => a.name).join(', ')}</span>
+                  <span className="font-medium">
+                    {pkg.addOns.map((a) => a.name).join(", ")}
+                  </span>
                 </div>
               )}
             </>
@@ -108,7 +120,9 @@ export default function PaymentStep() {
           <div className="pt-2 border-t border-gray-200">
             <div className="flex justify-between text-lg font-bold">
               <span>TOPLAM (KDV dahil):</span>
-              <span>€{totalPrice.eur} / {totalPrice.dkr}kr</span>
+              <span>
+                €{totalPrice.eur} / {totalPrice.dkr}kr
+              </span>
             </div>
           </div>
         </div>
@@ -128,7 +142,10 @@ export default function PaymentStep() {
 
         {/* Coupon Code */}
         <div>
-          <label htmlFor="couponCode" className="block text-sm font-medium mb-2">
+          <label
+            htmlFor="couponCode"
+            className="block text-sm font-medium mb-2"
+          >
             Kupon Kodu
           </label>
           <div className="flex gap-2">
@@ -166,7 +183,9 @@ export default function PaymentStep() {
             </label>
           </div>
           {errors.agreedToTerms && (
-            <p className="text-red-500 text-sm">{errors.agreedToTerms.message}</p>
+            <p className="text-red-500 text-sm">
+              {errors.agreedToTerms.message}
+            </p>
           )}
 
           <div className="flex items-start gap-2">
@@ -183,7 +202,9 @@ export default function PaymentStep() {
             </label>
           </div>
           {errors.agreedToPrivacy && (
-            <p className="text-red-500 text-sm">{errors.agreedToPrivacy.message}</p>
+            <p className="text-red-500 text-sm">
+              {errors.agreedToPrivacy.message}
+            </p>
           )}
 
           <div className="flex items-start gap-2">
@@ -200,7 +221,9 @@ export default function PaymentStep() {
             </label>
           </div>
           {errors.agreedToService && (
-            <p className="text-red-500 text-sm">{errors.agreedToService.message}</p>
+            <p className="text-red-500 text-sm">
+              {errors.agreedToService.message}
+            </p>
           )}
         </div>
 

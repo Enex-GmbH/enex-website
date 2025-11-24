@@ -10,7 +10,14 @@ import { de } from "date-fns/locale";
 
 export default function ConfirmationPage() {
   const router = useRouter();
-  const { location, package: pkg, dateTime, contactDetails, resetBooking, getTotalPrice } = useBookingStore();
+  const {
+    location,
+    package: pkg,
+    dateTime,
+    contactDetails,
+    resetBooking,
+    getTotalPrice,
+  } = useBookingStore();
   const totalPrice = getTotalPrice();
 
   const bookingReference = `ENX-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
@@ -19,10 +26,10 @@ export default function ConfirmationPage() {
     if (!dateTime) return;
 
     const event = {
-      title: 'ENEX Fahrzeugpflege Service',
+      title: "ENEX Fahrzeugpflege Service",
       description: `Paket: ${pkg?.selectedPlan}\nFahrzeugtyp: ${pkg?.carType}\nAdresse: ${location?.address}`,
       start: dateTime.date,
-      duration: [4, 'hours'],
+      duration: [4, "hours"],
     };
 
     // Create ICS file content
@@ -37,22 +44,22 @@ END:VEVENT
 END:VCALENDAR`;
 
     // Download ICS file
-    const blob = new Blob([icsContent], { type: 'text/calendar' });
+    const blob = new Blob([icsContent], { type: "text/calendar" });
     const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.download = 'enex-booking.ics';
+    link.download = "enex-booking.ics";
     link.click();
   };
 
   const handleManageBooking = () => {
     // Navigate to booking management (to be implemented)
-    router.push('/');
+    router.push("/");
   };
 
   const handleNewBooking = () => {
     resetBooking();
-    router.push('/');
+    router.push("/");
   };
 
   return (
@@ -66,20 +73,24 @@ END:VCALENDAR`;
             Randevunuz onaylandı!
           </h1>
           <p className="text-gray-600">
-            Rezervasyon numaranız: <span className="font-semibold">{bookingReference}</span>
+            Rezervasyon numaranız:{" "}
+            <span className="font-semibold">{bookingReference}</span>
           </p>
         </div>
 
         <div className="space-y-6 mb-8">
           <div className="bg-gray-50 p-6 rounded-lg">
-            <h2 className="font-semibold text-lg mb-4">Özet: Tarih/Saat, Adres, Paket, Toplam (KDV dahil)</h2>
+            <h2 className="font-semibold text-lg mb-4">
+              Özet: Tarih/Saat, Adres, Paket, Toplam (KDV dahil)
+            </h2>
 
             <div className="space-y-3 text-sm">
               {dateTime && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tarih/Saat:</span>
                   <span className="font-medium">
-                    {format(dateTime.date, "PPP", { locale: de })} - {dateTime.timeSlot}
+                    {format(dateTime.date, "PPP", { locale: de })} -{" "}
+                    {dateTime.timeSlot}
                   </span>
                 </div>
               )}
@@ -95,7 +106,9 @@ END:VCALENDAR`;
                 <>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Paket:</span>
-                    <span className="font-medium capitalize">{pkg.selectedPlan}</span>
+                    <span className="font-medium capitalize">
+                      {pkg.selectedPlan}
+                    </span>
                   </div>
 
                   <div className="flex justify-between">
@@ -106,7 +119,9 @@ END:VCALENDAR`;
                   {pkg.addOns.length > 0 && (
                     <div className="flex justify-between">
                       <span className="text-gray-600">Add-ons:</span>
-                      <span className="font-medium">{pkg.addOns.map(a => a.name).join(', ')}</span>
+                      <span className="font-medium">
+                        {pkg.addOns.map((a) => a.name).join(", ")}
+                      </span>
                     </div>
                   )}
                 </>
@@ -115,7 +130,9 @@ END:VCALENDAR`;
               <div className="pt-3 border-t border-gray-200">
                 <div className="flex justify-between text-lg font-bold">
                   <span>TOPLAM (KDV dahil):</span>
-                  <span>€{totalPrice.eur} / {totalPrice.dkr}kr</span>
+                  <span>
+                    €{totalPrice.eur} / {totalPrice.dkr}kr
+                  </span>
                 </div>
               </div>
             </div>
@@ -125,9 +142,18 @@ END:VCALENDAR`;
             <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="font-semibold mb-3">Kontaktdaten</h3>
               <div className="space-y-2 text-sm">
-                <p><span className="text-gray-600">Name:</span> {contactDetails.firstName} {contactDetails.lastName}</p>
-                <p><span className="text-gray-600">E-Mail:</span> {contactDetails.email}</p>
-                <p><span className="text-gray-600">Telefon:</span> {contactDetails.phone}</p>
+                <p>
+                  <span className="text-gray-600">Name:</span>{" "}
+                  {contactDetails.firstName} {contactDetails.lastName}
+                </p>
+                <p>
+                  <span className="text-gray-600">E-Mail:</span>{" "}
+                  {contactDetails.email}
+                </p>
+                <p>
+                  <span className="text-gray-600">Telefon:</span>{" "}
+                  {contactDetails.phone}
+                </p>
               </div>
             </div>
           )}
@@ -154,7 +180,8 @@ END:VCALENDAR`;
 
         <div className="mt-6 p-4 bg-blue-50 rounded-lg">
           <p className="text-sm text-gray-700">
-            <strong>Hazırlık:</strong> park alanı, priz, değerli eşyalarınızı alınız.
+            <strong>Hazırlık:</strong> park alanı, priz, değerli eşyalarınızı
+            alınız.
           </p>
         </div>
 

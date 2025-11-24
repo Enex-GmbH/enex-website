@@ -7,5 +7,5 @@ export default function Home() {
       <Hero />
       <Plans />
     </main>
-  )
+  );
 }

@@ -1,8 +1,8 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-export type CarType = 'Sedan' | 'SUV' | 'Hatchback' | 'Coupe';
-export type PlanType = 'basic' | 'premium' | 'exclusive';
+export type CarType = "Sedan" | "SUV" | "Hatchback" | "Coupe";
+export type PlanType = "basic" | "premium" | "exclusive";
 
 export interface AddOn {
   id: string;
@@ -15,7 +15,7 @@ export interface AddOn {
 export interface LocationData {
   postalCode: string;
   address: string;
-  zone: 'inside' | 'outside';
+  zone: "inside" | "outside";
   tollFeeEur: number;
   tollFeeDkr: number;
   hasWater: boolean;
@@ -150,7 +150,7 @@ export const useBookingStore = create<BookingState>()(
       },
     }),
     {
-      name: 'booking-storage',
+      name: "booking-storage",
       partialize: (state) => ({
         location: state.location,
         package: state.package,
