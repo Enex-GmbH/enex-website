@@ -20,7 +20,6 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { CheckCircle2, Car } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTranslations } from "next-intl";
 
 const availableAddOns: AddOn[] = [
   {
@@ -56,7 +55,6 @@ const availableAddOns: AddOn[] = [
 
 export default function PackageStep() {
   const router = useRouter();
-  const t = useTranslations("HOME.plans");
   const { package: pkg, setPackage, isStepComplete } = useBookingStore();
   const [selectedAddOns, setSelectedAddOns] = useState<AddOn[]>(
     pkg?.addOns || []
@@ -81,7 +79,7 @@ export default function PackageStep() {
 
   useEffect(() => {
     if (!isStepComplete(1)) {
-      router.push("/de/booking/location");
+      router.push("/booking/location");
     }
   }, [isStepComplete, router]);
 
@@ -107,7 +105,7 @@ export default function PackageStep() {
       ...data,
       addOns: selectedAddOns,
     });
-    router.push("/de/booking/datetime");
+    router.push("/booking/datetime");
   };
 
   const plans = [
@@ -165,7 +163,9 @@ export default function PackageStep() {
               >
                 <div className="flex items-start justify-between mb-2">
                   <h3 className="font-bold text-lg">
-                    {t(`${plan.key}.title`)}
+                    {plan.key === "basicPlan" && "Basis-Paket"}
+                    {plan.key === "premiumPlan" && "Premium-Paket"}
+                    {plan.key === "exclusivePlan" && "Exklusiv-Paket"}
                   </h3>
                   {selectedPlan === plan.id && (
                     <CheckCircle2 className="w-5 h-5 text-enex-primary" />

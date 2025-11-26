@@ -37,13 +37,13 @@ export default function DetailsStep() {
 
   useEffect(() => {
     if (!isStepComplete(3)) {
-      router.push("/de/booking/datetime");
+      router.push("/booking/datetime");
     }
   }, [isStepComplete, router]);
 
   const onSubmit = (data: ContactDetailsFormData) => {
     setContactDetails(data);
-    router.push("/de/booking/payment");
+    router.push("/booking/payment");
   };
 
   return (

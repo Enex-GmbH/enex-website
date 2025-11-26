@@ -67,7 +67,7 @@ export default function LocationStep() {
       tollFeeEur: tollFee.eur,
       tollFeeDkr: tollFee.dkr,
     });
-    router.push("/de/booking/package");
+    router.push("/booking/package");
   };
 
   return (

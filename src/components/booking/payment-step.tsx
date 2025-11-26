@@ -48,7 +48,7 @@ export default function PaymentStep() {
 
   useEffect(() => {
     if (!isStepComplete(4)) {
-      router.push("/de/booking/details");
+      router.push("/booking/details");
     }
   }, [isStepComplete, router]);
 
@@ -60,7 +60,7 @@ export default function PaymentStep() {
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     setIsSubmitting(false);
-    router.push("/de/booking/confirmation");
+    router.push("/booking/confirmation");
   };
 
   const handleApplyCoupon = () => {

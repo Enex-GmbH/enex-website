@@ -1,6 +1,5 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import {
@@ -32,7 +31,6 @@ const HeroBlob = () => {
 };
 
 function Hero() {
-  const t = useTranslations("HOME.hero");
   const router = useRouter();
   const { setPackage, setDateTime } = useBookingStore();
   const [selectedPlace, setSelectedPlace] = useState("");
@@ -58,7 +56,7 @@ function Hero() {
     }
 
     // Navigate to booking flow
-    router.push("/de/booking/location");
+    router.push("/booking/location");
   };
 
   return (
@@ -68,10 +66,10 @@ function Hero() {
         <div className="container mx-auto flex flex-col lg:flex-row justify-center gap-15">
           <div className="pt-24">
             <h1 className="font-semibold leading-[1.1] text-balance text-[clamp(2rem,5vw+1rem,3.5rem)] tracking-tight">
-              {t("title")}
+              Sauber. Smart. Mühelos.
             </h1>
             <p className="mt-4 text-balance text-[clamp(1rem,2vw+0.25rem,1.25rem)] text-gray-600">
-              {t("description")}
+              Erlebe die nächste Generation der Autopflege – überall, wo du bist.
             </p>
 
             {/* SEARCH AREA */}
@@ -81,7 +79,7 @@ function Hero() {
                 <MapPin className="h-6 w-6 text-enex-primary" />
                 <Select value={selectedPlace} onValueChange={setSelectedPlace}>
                   <SelectTrigger className="w-full !h-12">
-                    <SelectValue placeholder={t("location")} />
+                    <SelectValue placeholder="Standort" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Berlin">Berlin</SelectItem>
@@ -97,7 +95,7 @@ function Hero() {
                 <CarFront className="h-6 w-6 text-enex-primary" />
                 <Select value={carType} onValueChange={setCarType}>
                   <SelectTrigger className="w-full !h-12">
-                    <SelectValue placeholder={t("carType")} />
+                    <SelectValue placeholder="Fahrzeugtyp" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Sedan">Sedan</SelectItem>
@@ -117,7 +115,7 @@ function Hero() {
                       variant="outline"
                       className="w-[calc(100%-32px)] !h-12 justify-start text-left font-normal text-gray-700"
                     >
-                      {date ? format(date, "PPP", { locale: de }) : t("date")}
+                      {date ? format(date, "PPP", { locale: de }) : "Datum"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -140,7 +138,7 @@ function Hero() {
                 className="mt-2 md:mt-0 h-12 flex items-center gap-2 text-white rounded-b-sm bg-enex-primary hover:bg-enex-hover"
               >
                 <Search className="w-4 h-4" />
-                {t("search")}
+                Suchen
               </Button>
             </div>
             {/* SEARCH AREA */}

@@ -6,16 +6,14 @@ import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
-import { useTranslations } from "next-intl";
 
 export function Navigation() {
   const [open, setOpen] = React.useState(false);
-  const t = useTranslations("HOME.header.nav");
 
   const navItems = [
-    { href: "/pricing", label: t("pricing") },
-    { href: "/coverage", label: t("coverage") },
-    { href: "/corporate", label: t("corporate") },
+    { href: "/pricing", label: "Preise" },
+    { href: "/coverage", label: "Deckung" },
+    { href: "/corporate", label: "Corporate" },
   ];
 
   return (

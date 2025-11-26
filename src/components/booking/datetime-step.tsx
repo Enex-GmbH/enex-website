@@ -51,7 +51,7 @@ export default function DateTimeStep() {
 
   useEffect(() => {
     if (!isStepComplete(2)) {
-      router.push("/de/booking/package");
+      router.push("/booking/package");
     }
   }, [isStepComplete, router]);
 
@@ -79,7 +79,7 @@ export default function DateTimeStep() {
 
   const onSubmit = (data: DateTimeFormData) => {
     setDateTime(data);
-    router.push("/de/booking/details");
+    router.push("/booking/details");
   };
 
   return (
