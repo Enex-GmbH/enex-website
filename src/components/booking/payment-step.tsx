@@ -75,14 +75,20 @@ export default function PaymentStep() {
     setPayment(data);
 
     try {
-      // Step 1: Create booking in database
-      const bookingResult = await createBooking({
-        location,
-        package: pkg,
-        dateTime,
-        contactDetails,
-        payment: data,
-      });
+      // Calculate final price with discount (in cents for consistency)
+      const finalPriceInCents = Math.round(finalPrice.eur * 100);
+      
+      // Step 1: Create booking in database with discounted price
+      const bookingResult = await createBooking(
+        {
+          location,
+          package: pkg,
+          dateTime,
+          contactDetails,
+          payment: data,
+        },
+        finalPriceInCents // Pass discounted price in cents
+      );
 
       if (!bookingResult.success || !bookingResult.bookingId) {
         alert(bookingResult.message || "Rezervasyon oluşturulamadı");
@@ -90,8 +96,8 @@ export default function PaymentStep() {
         return;
       }
 
-      // Step 2: Create payment intent
-      const amountInCents = Math.round(finalPrice.eur * 100);
+      // Step 2: Create payment intent (use the same finalPriceInCents)
+      const amountInCents = finalPriceInCents;
       const paymentIntentResult = await createPaymentIntent(
         amountInCents,
         "eur",

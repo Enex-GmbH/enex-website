@@ -22,13 +22,16 @@ import type {
  * @param storeData - Complete booking data from Zustand store
  * @returns Created booking data or error
  */
-export async function createBooking(storeData: {
-  location: LocationData | null;
-  package: PackageData | null;
-  dateTime: DateTimeData | null;
-  contactDetails: ContactDetails | null;
-  payment: PaymentData | null;
-}): Promise<{
+export async function createBooking(
+  storeData: {
+    location: LocationData | null;
+    package: PackageData | null;
+    dateTime: DateTimeData | null;
+    contactDetails: ContactDetails | null;
+    payment: PaymentData | null;
+  },
+  discountedPriceInCents?: number // Optional discounted price in cents
+): Promise<{
   success: boolean;
   bookingId?: number;
   reference?: string;
@@ -90,10 +93,13 @@ export async function createBooking(storeData: {
     }
 
     // Transform store data to database format
+    // Pass discounted price if provided (it's in cents, will be converted in the helper)
     const bookingData = transformBookingStoreToDb(
       storeData,
       franchiseId,
-      reference
+      reference,
+      "EUR", // Default currency
+      discountedPriceInCents
     );
 
     // Check if time slot is still available

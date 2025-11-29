@@ -1,54 +1,67 @@
 "use client";
 
-import { useBookingStore } from "@/store/booking-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { CheckCircle2, Calendar, Download } from "lucide-react";
+import { CheckCircle2, Calendar, Download, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { de } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { getBookingByReference } from "@/lib/actions";
+import type { bookings } from "@/lib/db/schema";
+import type { AddOn } from "@/store/booking-store";
+
+type Booking = typeof bookings.$inferSelect;
 
 export default function ConfirmationPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const bookingReferenceParam = searchParams.get("reference");
-  const [bookingReference, setBookingReference] = useState<string>(
-    bookingReferenceParam || ""
-  );
-  const {
-    location,
-    package: pkg,
-    dateTime,
-    contactDetails,
-    resetBooking,
-    getTotalPrice,
-  } = useBookingStore();
-  const totalPrice = getTotalPrice();
+  const [booking, setBooking] = useState<Booking | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch booking details if reference is provided
+  // Fetch booking details from database
   useEffect(() => {
-    if (bookingReferenceParam) {
-      setBookingReference(bookingReferenceParam);
-      // Optionally fetch booking details from server
-      // getBookingByReference(bookingReferenceParam)
-      //   .then((result) => {
-      //     if (result.success && result.booking) {
-      //       // Use booking data from server if needed
-      //     }
-      //   })
-      //   .catch(console.error);
+    if (!bookingReferenceParam) {
+      setError("Rezervasyon referansı bulunamadı");
+      setLoading(false);
+      return;
     }
+
+    setLoading(true);
+    getBookingByReference(bookingReferenceParam)
+      .then((result) => {
+        if (result.success && result.booking) {
+          setBooking(result.booking);
+          setError(null);
+        } else {
+          setError(result.message || "Rezervasyon bulunamadı");
+          setBooking(null);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching booking:", err);
+        setError("Rezervasyon yüklenirken bir hata oluştu");
+        setLoading(false);
+      });
   }, [bookingReferenceParam]);
 
   const handleAddToCalendar = () => {
-    if (!dateTime) return;
+    if (!booking) return;
+
+    // Parse date from string format (YYYY-MM-DD)
+    const bookingDate = parse(booking.date, "yyyy-MM-dd", new Date());
+    // Parse time and combine with date
+    const [hours, minutes] = booking.time.split(":").map(Number);
+    const eventDateTime = new Date(bookingDate);
+    eventDateTime.setHours(hours, minutes, 0, 0);
 
     const event = {
       title: "ENEX Fahrzeugpflege Service",
-      description: `Paket: ${pkg?.selectedPlan}\nFahrzeugtyp: ${pkg?.carType}\nAdresse: ${location?.address}`,
-      start: dateTime.date,
+      description: `Paket: ${booking.plan}\nFahrzeugtyp: ${booking.carType}\nAdresse: ${booking.address}\nReferenz: ${booking.reference}`,
+      start: eventDateTime,
       duration: [4, "hours"],
     };
 
@@ -68,7 +81,7 @@ END:VCALENDAR`;
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "enex-booking.ics";
+    link.download = `enex-booking-${booking.reference}.ics`;
     link.click();
   };
 
@@ -78,9 +91,62 @@ END:VCALENDAR`;
   };
 
   const handleNewBooking = () => {
-    resetBooking();
     router.push("/");
   };
+
+  // Format date for display
+  const formatBookingDate = (dateStr: string): string => {
+    try {
+      const date = parse(dateStr, "yyyy-MM-dd", new Date());
+      return format(date, "PPP", { locale: de });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Calculate DKK price from EUR (assuming 7.5 ratio, adjust as needed)
+  const calculateDkkPrice = (eurPrice: number): number => {
+    // This is a simplified conversion - you might want to store DKK separately
+    // or get it from the franchise settings
+    return Math.round(eurPrice * 7.5);
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <Card className="p-8">
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-enex-primary mb-4" />
+            <p className="text-gray-600">Rezervasyon yükleniyor...</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error || !booking) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <Card className="p-8">
+          <div className="text-center py-12">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
+              <CheckCircle2 className="w-8 h-8 text-red-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Rezervasyon bulunamadı
+            </h1>
+            <p className="text-gray-600 mb-6">{error || "Rezervasyon bulunamadı"}</p>
+            <Button
+              onClick={() => router.push("/")}
+              className="bg-enex-primary hover:bg-enex-hover text-white"
+            >
+              Ana Sayfaya Dön
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -94,7 +160,10 @@ END:VCALENDAR`;
           </h1>
           <p className="text-gray-600">
             Rezervasyon numaranız:{" "}
-            <span className="font-semibold">{bookingReference}</span>
+            <span className="font-semibold">{booking.reference}</span>
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Durum: <span className="font-medium capitalize">{booking.status}</span>
           </p>
         </div>
 
@@ -105,78 +174,138 @@ END:VCALENDAR`;
             </h2>
 
             <div className="space-y-3 text-sm">
-              {dateTime && (
+              {/* Date & Time */}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Tarih/Saat:</span>
+                <span className="font-medium">
+                  {formatBookingDate(booking.date)} - {booking.time}
+                </span>
+              </div>
+
+              {/* Address */}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Adres:</span>
+                <span className="font-medium text-right max-w-[60%]">
+                  {booking.address}
+                </span>
+              </div>
+
+              {/* Postal Code */}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Postleitzahl:</span>
+                <span className="font-medium">{booking.postalCode}</span>
+              </div>
+
+              {/* Package */}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Paket:</span>
+                <span className="font-medium capitalize">{booking.plan}</span>
+              </div>
+
+              {/* Car Type */}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Fahrzeugtyp:</span>
+                <span className="font-medium">{booking.carType}</span>
+              </div>
+
+              {/* Add-ons */}
+              {booking.addons && Array.isArray(booking.addons) && booking.addons.length > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Tarih/Saat:</span>
-                  <span className="font-medium">
-                    {format(dateTime.date, "PPP", { locale: de })} -{" "}
-                    {dateTime.timeSlot}
+                  <span className="text-gray-600">Add-ons:</span>
+                  <span className="font-medium text-right max-w-[60%]">
+                    {(booking.addons as AddOn[]).map((a) => a.name).join(", ")}
                   </span>
                 </div>
               )}
 
-              {location && (
+              {/* Toll Fee */}
+              {booking.tollFee && booking.tollFee > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Adres:</span>
-                  <span className="font-medium">{location.address}</span>
+                  <span className="text-gray-600">Yol Ücreti:</span>
+                  <span className="font-medium">
+                    {booking.isInsideZone ? "0€" : `${booking.tollFee}€`}
+                  </span>
                 </div>
               )}
 
-              {pkg && (
-                <>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Paket:</span>
-                    <span className="font-medium capitalize">
-                      {pkg.selectedPlan}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Fahrzeugtyp:</span>
-                    <span className="font-medium">{pkg.carType}</span>
-                  </div>
-
-                  {pkg.addOns.length > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Add-ons:</span>
-                      <span className="font-medium">
-                        {pkg.addOns.map((a) => a.name).join(", ")}
-                      </span>
-                    </div>
-                  )}
-                </>
+              {/* Utilities */}
+              {(booking.waterAvailable || booking.electricityAvailable) && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Verfügbare Services:</span>
+                  <span className="font-medium">
+                    {[
+                      booking.waterAvailable && "Wasser",
+                      booking.electricityAvailable && "Strom",
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </span>
+                </div>
               )}
 
+              {/* Coupon Code */}
+              {booking.couponCode && (
+                <div className="flex justify-between text-green-600">
+                  <span>Kupon Kodu:</span>
+                  <span className="font-medium">{booking.couponCode}</span>
+                </div>
+              )}
+
+              {/* Total Price */}
               <div className="pt-3 border-t border-gray-200">
                 <div className="flex justify-between text-lg font-bold">
-                  <span>TOPLAM (KDV dahil):</span>
+                  <span>TOPLAM ({booking.currency}):</span>
                   <span>
-                    €{totalPrice.eur} / {totalPrice.dkr}kr
+                    {booking.currency === "EUR" ? "€" : ""}
+                    {booking.totalPrice}
+                    {booking.currency === "EUR" ? "" : ` ${booking.currency}`}
+                    {booking.currency === "EUR" && (
+                      <span className="text-sm font-normal text-gray-500 ml-2">
+                        / {calculateDkkPrice(booking.totalPrice)}kr
+                      </span>
+                    )}
                   </span>
                 </div>
               </div>
             </div>
           </div>
 
-          {contactDetails && (
-            <div className="bg-gray-50 p-6 rounded-lg">
-              <h3 className="font-semibold mb-3">Kontaktdaten</h3>
-              <div className="space-y-2 text-sm">
+          {/* Customer Details */}
+          <div className="bg-gray-50 p-6 rounded-lg">
+            <h3 className="font-semibold mb-3">Kontaktdaten</h3>
+            <div className="space-y-2 text-sm">
+              <p>
+                <span className="text-gray-600">Name:</span>{" "}
+                {booking.customerFirstName} {booking.customerLastName}
+              </p>
+              <p>
+                <span className="text-gray-600">E-Mail:</span>{" "}
+                {booking.customerEmail}
+              </p>
+              <p>
+                <span className="text-gray-600">Telefon:</span>{" "}
+                {booking.customerPhone}
+              </p>
+              {booking.licensePlate && (
                 <p>
-                  <span className="text-gray-600">Name:</span>{" "}
-                  {contactDetails.firstName} {contactDetails.lastName}
+                  <span className="text-gray-600">Kennzeichen:</span>{" "}
+                  {booking.licensePlate}
                 </p>
+              )}
+              {booking.carMake && (
                 <p>
-                  <span className="text-gray-600">E-Mail:</span>{" "}
-                  {contactDetails.email}
+                  <span className="text-gray-600">Fahrzeug:</span>{" "}
+                  {booking.carMake}
                 </p>
+              )}
+              {booking.parkingNotes && (
                 <p>
-                  <span className="text-gray-600">Telefon:</span>{" "}
-                  {contactDetails.phone}
+                  <span className="text-gray-600">Parknotiz:</span>{" "}
+                  {booking.parkingNotes}
                 </p>
-              </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4">

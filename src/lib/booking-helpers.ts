@@ -80,7 +80,8 @@ export function transformBookingStoreToDb(
   },
   franchiseId: number,
   reference: string,
-  currency: string = "EUR"
+  currency: string = "EUR",
+  discountedPrice?: number // Optional discounted price (in cents for EUR)
 ): BookingDbData {
   const { location, package: pkg, dateTime, contactDetails, payment } = storeData;
 
@@ -89,7 +90,12 @@ export function transformBookingStoreToDb(
   }
 
   // Calculate total price (using EUR as primary currency for now)
-  const totalPrice = calculateTotalPrice(location, pkg, currency);
+  let totalPrice = calculateTotalPrice(location, pkg, currency);
+  
+  // Apply discount if provided (discountedPrice is in cents, convert to euros)
+  if (discountedPrice !== undefined && currency === "EUR") {
+    totalPrice = Math.round(discountedPrice / 100); // Convert from cents to euros
+  }
 
   return {
     franchiseId,

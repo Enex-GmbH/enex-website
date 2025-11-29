@@ -12,4 +12,10 @@ export { applyCoupon } from "./applyCoupon";
 export { createPaymentIntent } from "./createPaymentIntent";
 export { createBooking } from "./createBooking";
 export { confirmBooking, getBookingByReference } from "./confirmBooking";
+export { getUserBookings } from "./getUserBookings";
+
+// Auth actions
+export { register } from "./auth/register";
+export { requestPasswordReset } from "./auth/resetPassword";
+export { updatePassword } from "./auth/updatePassword";
 

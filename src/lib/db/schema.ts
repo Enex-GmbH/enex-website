@@ -9,6 +9,7 @@ import {
     boolean,
     jsonb,
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import type { AddOn } from "@/store/booking-store";
 
 /* ----------------------------------------
@@ -115,3 +116,86 @@ export const bookingEvents = pgTable("booking_events", {
     toStatus: varchar("to_status", { length: 20 }),
     timestamp: timestamp("timestamp").defaultNow(),
 });
+
+/* ----------------------------------------
+   AUTHENTICATION TABLES
+---------------------------------------- */
+export const users = pgTable("users", {
+    id: serial("id").primaryKey(),
+    email: varchar("email", { length: 255 }).notNull().unique(),
+    emailVerified: timestamp("email_verified"),
+    name: varchar("name", { length: 255 }),
+    password: varchar("password", { length: 255 }).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const accounts = pgTable("accounts", {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+        .notNull()
+        .references(() => users.id, { onDelete: "cascade" }),
+    type: varchar("type", { length: 255 }).notNull(),
+    provider: varchar("provider", { length: 255 }).notNull(),
+    providerAccountId: varchar("provider_account_id", { length: 255 }).notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: varchar("token_type", { length: 255 }),
+    scope: varchar("scope", { length: 255 }),
+    id_token: text("id_token"),
+    session_state: varchar("session_state", { length: 255 }),
+});
+
+export const sessions = pgTable("sessions", {
+    id: serial("id").primaryKey(),
+    sessionToken: varchar("session_token", { length: 255 }).notNull().unique(),
+    userId: integer("user_id")
+        .notNull()
+        .references(() => users.id, { onDelete: "cascade" }),
+    expires: timestamp("expires").notNull(),
+});
+
+export const verificationTokens = pgTable("verification_tokens", {
+    identifier: varchar("identifier", { length: 255 }).notNull(),
+    token: varchar("token", { length: 255 }).notNull(),
+    expires: timestamp("expires").notNull(),
+});
+
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id")
+        .notNull()
+        .references(() => users.id, { onDelete: "cascade" }),
+    token: varchar("token", { length: 255 }).notNull().unique(),
+    expires: timestamp("expires").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Relations for NextAuth
+export const usersRelations = relations(users, ({ many }) => ({
+    accounts: many(accounts),
+    sessions: many(sessions),
+    passwordResetTokens: many(passwordResetTokens),
+}));
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+    user: one(users, {
+        fields: [accounts.userId],
+        references: [users.id],
+    }),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+    user: one(users, {
+        fields: [sessions.userId],
+        references: [users.id],
+    }),
+}));
+
+export const passwordResetTokensRelations = relations(passwordResetTokens, ({ one }) => ({
+    user: one(users, {
+        fields: [passwordResetTokens.userId],
+        references: [users.id],
+    }),
+}));
