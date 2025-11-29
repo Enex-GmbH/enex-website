@@ -9,14 +9,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { useState } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { CalendarDays, CarFront, MapPin, Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Calendar } from "../ui/calendar";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth, addMonths } from "date-fns";
 import { de } from "date-fns/locale";
 import { useRouter } from "next/navigation";
 import { useBookingStore, CarType } from "@/store/booking-store";
+import { getFullyBookedDates } from "@/lib/actions/getFullyBookedDates";
 
 const HeroBlob = () => {
   return (
@@ -37,6 +38,68 @@ function Hero() {
   const [carType, setCarType] = useState("");
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [fullyBookedDates, setFullyBookedDates] = useState<string[]>([]);
+  const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
+  const [isLoadingBookedDates, setIsLoadingBookedDates] = useState(false);
+
+  // Fetch fully booked dates on component mount
+  useEffect(() => {
+    const startDate = startOfMonth(new Date());
+    const endDate = endOfMonth(addMonths(new Date(), 1));
+
+    setIsLoadingBookedDates(true);
+    getFullyBookedDates(startDate, endDate)
+      .then((bookedDates) => {
+        setFullyBookedDates(bookedDates);
+        setIsLoadingBookedDates(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching fully booked dates:", error);
+        setFullyBookedDates([]);
+        setIsLoadingBookedDates(false);
+      });
+  }, []); // Only on mount
+
+  // Fetch when calendar opens or month changes
+  useEffect(() => {
+    if (!isCalendarOpen) return;
+
+    const startDate = startOfMonth(calendarMonth);
+    const endDate = endOfMonth(addMonths(calendarMonth, 1));
+
+    setIsLoadingBookedDates(true);
+    getFullyBookedDates(startDate, endDate)
+      .then((bookedDates) => {
+        setFullyBookedDates(bookedDates);
+        setIsLoadingBookedDates(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching fully booked dates:", error);
+        setFullyBookedDates([]);
+        setIsLoadingBookedDates(false);
+      });
+  }, [isCalendarOpen, calendarMonth]);
+
+  // Function to check if a date is disabled (fully booked or in the past)
+  // Use useCallback to ensure the function reference is stable and reactive
+  const isDateDisabled = useCallback(
+    (date: Date): boolean => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const checkDate = new Date(date);
+      checkDate.setHours(0, 0, 0, 0);
+
+      // Disable past dates
+      if (checkDate < today) {
+        return true;
+      }
+
+      // Disable fully booked dates
+      const dateStr = format(date, "yyyy-MM-dd");
+      return fullyBookedDates.includes(dateStr);
+    },
+    [fullyBookedDates]
+  );
 
   const handleSearch = () => {
     // Pre-fill booking store with hero form data
@@ -119,15 +182,29 @@ function Hero() {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={(selectedDate) => {
-                        setDate(selectedDate);
-                        setIsCalendarOpen(false);
-                      }}
-                      locale={de}
-                    />
+                    {isLoadingBookedDates && fullyBookedDates.length === 0 ? (
+                      <div className="p-4 text-center text-sm text-gray-500 min-w-[300px]">
+                        Yükleniyor...
+                      </div>
+                    ) : (
+                      <Calendar
+                        key={`calendar-${fullyBookedDates.length}`} // Force re-render when booked dates change
+                        mode="single"
+                        selected={date}
+                        onSelect={(selectedDate) => {
+                          // Only allow selection if date is not disabled
+                          if (selectedDate && !isDateDisabled(selectedDate)) {
+                            setDate(selectedDate);
+                            setIsCalendarOpen(false);
+                          }
+                        }}
+                        onMonthChange={(month) => {
+                          setCalendarMonth(month);
+                        }}
+                        disabled={isDateDisabled}
+                        locale={de}
+                      />
+                    )}
                   </PopoverContent>
                 </Popover>
               </div>

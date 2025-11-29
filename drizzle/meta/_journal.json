@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1764190097453,
+      "tag": "0000_sloppy_sister_grimm",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1764224353147,
+      "tag": "0001_burly_marten_broadcloak",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764357614729,
+      "tag": "0002_chief_vision",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1764358466754,
+      "tag": "0003_careless_miss_america",
+      "breakpoints": true
+    }
+  ]
+}

@@ -4,12 +4,19 @@ import { useBookingStore } from "@/store/booking-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, Calendar, Download } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { useEffect, useState } from "react";
+import { getBookingByReference } from "@/lib/actions";
 
 export default function ConfirmationPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const bookingReferenceParam = searchParams.get("reference");
+  const [bookingReference, setBookingReference] = useState<string>(
+    bookingReferenceParam || ""
+  );
   const {
     location,
     package: pkg,
@@ -20,7 +27,20 @@ export default function ConfirmationPage() {
   } = useBookingStore();
   const totalPrice = getTotalPrice();
 
-  const bookingReference = `ENX-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+  // Fetch booking details if reference is provided
+  useEffect(() => {
+    if (bookingReferenceParam) {
+      setBookingReference(bookingReferenceParam);
+      // Optionally fetch booking details from server
+      // getBookingByReference(bookingReferenceParam)
+      //   .then((result) => {
+      //     if (result.success && result.booking) {
+      //       // Use booking data from server if needed
+      //     }
+      //   })
+      //   .catch(console.error);
+    }
+  }, [bookingReferenceParam]);
 
   const handleAddToCalendar = () => {
     if (!dateTime) return;

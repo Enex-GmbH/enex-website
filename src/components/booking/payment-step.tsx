@@ -15,10 +15,23 @@ import { useEffect, useState } from "react";
 import { CreditCard, Tag } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import {
+  applyCoupon,
+  createBooking,
+  createPaymentIntent,
+  confirmBooking,
+} from "@/lib/actions";
 
 export default function PaymentStep() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [couponApplied, setCouponApplied] = useState(false);
+  const [discount, setDiscount] = useState(0);
+  const [discountedPrice, setDiscountedPrice] = useState<{
+    eur: number;
+    dkr: number;
+  } | null>(null);
   const {
     location,
     package: pkg,
@@ -28,13 +41,16 @@ export default function PaymentStep() {
     setPayment,
     isStepComplete,
     getTotalPrice,
+    resetBooking,
   } = useBookingStore();
 
   const totalPrice = getTotalPrice();
+  const finalPrice = discountedPrice || totalPrice;
 
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<PaymentFormData>({
     resolver: zodResolver(paymentSchema),
@@ -46,6 +62,8 @@ export default function PaymentStep() {
     },
   });
 
+  const couponCodeValue = watch("couponCode");
+
   useEffect(() => {
     if (!isStepComplete(4)) {
       router.push("/booking/details");
@@ -56,16 +74,114 @@ export default function PaymentStep() {
     setIsSubmitting(true);
     setPayment(data);
 
-    // Simulate payment processing
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      // Step 1: Create booking in database
+      const bookingResult = await createBooking({
+        location,
+        package: pkg,
+        dateTime,
+        contactDetails,
+        payment: data,
+      });
 
-    setIsSubmitting(false);
-    router.push("/booking/confirmation");
+      if (!bookingResult.success || !bookingResult.bookingId) {
+        alert(bookingResult.message || "Rezervasyon oluşturulamadı");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Step 2: Create payment intent
+      const amountInCents = Math.round(finalPrice.eur * 100);
+      const paymentIntentResult = await createPaymentIntent(
+        amountInCents,
+        "eur",
+        bookingResult.reference!,
+        contactDetails!.email
+      );
+
+      if (!paymentIntentResult.success || !paymentIntentResult.clientSecret) {
+        alert(
+          paymentIntentResult.message || "Ödeme işlemi başlatılamadı"
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      // TODO: Step 3: Integrate Stripe Elements here
+      // For now, we'll simulate payment success
+      // In production, you would:
+      // 1. Use Stripe Elements to collect card details
+      // 2. Confirm the payment intent with Stripe
+      // 3. Wait for payment confirmation
+
+      // Simulate payment confirmation (remove this when Stripe is integrated)
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Step 4: Confirm booking after payment succeeds
+      const confirmResult = await confirmBooking(
+        bookingResult.bookingId,
+        paymentIntentResult.paymentIntentId!,
+        amountInCents
+      );
+
+      if (!confirmResult.success) {
+        alert(confirmResult.message || "Rezervasyon onaylanamadı");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Step 5: Navigate to confirmation page with booking reference
+      resetBooking();
+      router.push(`/booking/confirmation?reference=${bookingResult.reference}`);
+    } catch (error) {
+      console.error("Error processing booking:", error);
+      alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+      setIsSubmitting(false);
+    }
   };
 
-  const handleApplyCoupon = () => {
-    // Handle coupon validation
-    alert("Kupon kodu uygulanıyor...");
+  const handleApplyCoupon = async () => {
+    const couponCode = couponCodeValue || payment?.couponCode;
+    if (!couponCode || !couponCode.trim()) {
+      alert("Lütfen bir kupon kodu girin");
+      return;
+    }
+
+    setApplyingCoupon(true);
+    try {
+      const result = await applyCoupon(couponCode, totalPrice.eur * 100); // Convert to cents
+
+      if (result.success && result.discount && result.discountedPrice) {
+        setCouponApplied(true);
+        setDiscount(result.discount);
+        // Convert discounted price back from cents to euros
+        const discountedEur = result.discountedPrice / 100;
+        // Calculate DKK equivalent (assuming same ratio)
+        const ratio = totalPrice.dkr / totalPrice.eur;
+        const newDiscountedPrice = {
+          eur: discountedEur,
+          dkr: Math.round(discountedEur * ratio),
+        };
+        setDiscountedPrice(newDiscountedPrice);
+        // Update payment data with coupon code
+        if (payment) {
+          setPayment({
+            ...payment,
+            couponCode: couponCode,
+          });
+        }
+      } else {
+        alert(result.message || "Kupon kodu geçersiz");
+        setCouponApplied(false);
+        setDiscount(0);
+        setDiscountedPrice(null);
+      }
+    } catch (error) {
+      console.error("Error applying coupon:", error);
+      alert("Kupon kodu uygulanırken bir hata oluştu");
+    } finally {
+      setApplyingCoupon(false);
+    }
   };
 
   return (
@@ -117,11 +233,17 @@ export default function PaymentStep() {
             </>
           )}
 
+          {couponApplied && discount > 0 && (
+            <div className="flex justify-between text-sm text-green-600">
+              <span>İndirim:</span>
+              <span>-€{(discount / 100).toFixed(2)}</span>
+            </div>
+          )}
           <div className="pt-2 border-t border-gray-200">
             <div className="flex justify-between text-lg font-bold">
               <span>TOPLAM (KDV dahil):</span>
               <span>
-                €{totalPrice.eur} / {totalPrice.dkr}kr
+                €{finalPrice.eur} / {finalPrice.dkr}kr
               </span>
             </div>
           </div>
@@ -159,10 +281,11 @@ export default function PaymentStep() {
               type="button"
               variant="outline"
               onClick={handleApplyCoupon}
+              disabled={applyingCoupon || !couponCodeValue?.trim()}
               className="flex-shrink-0"
             >
               <Tag className="w-4 h-4 mr-2" />
-              Uygula
+              {applyingCoupon ? "Uygulanıyor..." : "Uygula"}
             </Button>
           </div>
         </div>

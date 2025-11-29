@@ -16,29 +16,42 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { format, addDays, startOfWeek } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { getAvailableTimeSlots } from "@/lib/actions/getAvailableTimeSlots";
 
-const timeSlots = ["09:30", "11:00", "13:00", "15:00", "17:00"];
-
-// Mock availability data (in real app, fetch from backend)
-const getTimeSlotAvailability = (date: Date, slot: string) => {
-  // Simulate some slots being unavailable
-  const dateStr = format(date, "yyyy-MM-dd");
-  const unavailable = [`${dateStr}-11:00`, `${dateStr}-15:00`];
-  return !unavailable.includes(`${dateStr}-${slot}`);
-};
+const defaultTimeSlots = ["09:30", "11:00", "13:00", "15:00", "17:00"];
 
 export default function DateTimeStep() {
   const router = useRouter();
   const { dateTime, setDateTime, isStepComplete } = useBookingStore();
+  
+  // Initialize selectedDate: use stored date, or default to today
+  const getInitialDate = (): Date => {
+    if (dateTime?.date) {
+      return dateTime.date instanceof Date
+        ? dateTime.date
+        : new Date(dateTime.date);
+    }
+    return new Date(); // Default to today
+  };
+
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    dateTime?.date
+    getInitialDate()
   );
   const [selectedTime, setSelectedTime] = useState<string | undefined>(
     dateTime?.timeSlot
   );
-  const [weekStart, setWeekStart] = useState<Date>(
-    startOfWeek(new Date(), { weekStartsOn: 1 })
-  );
+  
+  // Initialize weekStart to the week containing the selected date (or today)
+  const getInitialWeekStart = (): Date => {
+    const dateToUse = selectedDate || new Date();
+    return startOfWeek(dateToUse, { weekStartsOn: 1 });
+  };
+  
+  const [weekStart, setWeekStart] = useState<Date>(getInitialWeekStart());
+  const [availableSlots, setAvailableSlots] = useState<
+    { time: string; available: boolean }[]
+  >([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   const {
     setValue,
@@ -46,7 +59,16 @@ export default function DateTimeStep() {
     formState: { errors },
   } = useForm<DateTimeFormData>({
     resolver: zodResolver(dateTimeSchema),
-    defaultValues: dateTime || undefined,
+    defaultValues: dateTime
+      ? {
+          // Ensure date is a Date object (it might be a string from persisted storage)
+          date:
+            dateTime.date instanceof Date
+              ? dateTime.date
+              : new Date(dateTime.date),
+          timeSlot: dateTime.timeSlot,
+        }
+      : undefined,
   });
 
   useEffect(() => {
@@ -58,6 +80,9 @@ export default function DateTimeStep() {
   useEffect(() => {
     if (selectedDate) {
       setValue("date", selectedDate);
+      // Update weekStart to show the week containing the selected date
+      const newWeekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
+      setWeekStart(newWeekStart);
     }
   }, [selectedDate, setValue]);
 
@@ -66,6 +91,40 @@ export default function DateTimeStep() {
       setValue("timeSlot", selectedTime);
     }
   }, [selectedTime, setValue]);
+
+  // Fetch available time slots when date is selected
+  useEffect(() => {
+    if (selectedDate) {
+      setLoadingSlots(true);
+      getAvailableTimeSlots(selectedDate)
+        .then((slots) => {
+          // Ensure we always have slots to display
+          if (slots.length > 0) {
+            setAvailableSlots(slots);
+          } else {
+            // Fallback to default slots if empty
+            setAvailableSlots(
+              defaultTimeSlots.map((time) => ({ time, available: true }))
+            );
+          }
+          setLoadingSlots(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching time slots:", error);
+          // Fallback to all slots as available
+          setAvailableSlots(
+            defaultTimeSlots.map((time) => ({ time, available: true }))
+          );
+          setLoadingSlots(false);
+        });
+    } else {
+      // When no date is selected, show default slots as available
+      // This allows users to see what slots are available before selecting a date
+      setAvailableSlots(
+        defaultTimeSlots.map((time) => ({ time, available: false }))
+      );
+    }
+  }, [selectedDate]);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -78,7 +137,12 @@ export default function DateTimeStep() {
   };
 
   const onSubmit = (data: DateTimeFormData) => {
-    setDateTime(data);
+    // Ensure date is a Date object before storing
+    const dateTimeData = {
+      date: data.date instanceof Date ? data.date : new Date(data.date),
+      timeSlot: data.timeSlot,
+    };
+    setDateTime(dateTimeData);
     router.push("/booking/details");
   };
 
@@ -143,47 +207,57 @@ export default function DateTimeStep() {
         )}
 
         {/* Time Slots */}
-        {selectedDate && (
-          <div>
-            <label className="block text-sm font-medium mb-3">
-              Saat Seçimi
-            </label>
+        <div>
+          <label className="block text-sm font-medium mb-3">
+            Saat Seçimi {!selectedDate && "(Önce bir tarih seçin)"}
+          </label>
+          {loadingSlots ? (
+            <div className="text-center py-4 text-gray-500">
+              Yükleniyor...
+            </div>
+          ) : availableSlots.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-              {timeSlots.map((slot) => {
-                const isAvailable = getTimeSlotAvailability(selectedDate, slot);
-                const isSelected = selectedTime === slot;
+              {availableSlots.map((slot) => {
+                const isSelected = selectedTime === slot.time;
+                const isDisabled = !slot.available || !selectedDate;
 
                 return (
                   <button
-                    key={slot}
+                    key={slot.time}
                     type="button"
-                    onClick={() => isAvailable && setSelectedTime(slot)}
-                    disabled={!isAvailable}
+                    onClick={() => !isDisabled && setSelectedTime(slot.time)}
+                    disabled={isDisabled}
                     className={cn(
                       "p-3 rounded-lg border-2 font-medium transition-colors",
                       isSelected &&
-                        isAvailable &&
+                        slot.available &&
+                        selectedDate &&
                         "border-enex-primary bg-enex-primary text-white",
                       !isSelected &&
-                        isAvailable &&
+                        slot.available &&
+                        selectedDate &&
                         "border-gray-200 hover:border-enex-primary",
-                      !isAvailable &&
+                      isDisabled &&
                         "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
                     )}
                   >
-                    {slot} {!isAvailable && "(disabled)"}
-                    {isAvailable && !isSelected && "(aktif)"}
+                    {slot.time} {!slot.available && "(dolu)"}
+                    {!selectedDate && slot.available && " (tarih seçin)"}
                   </button>
                 );
               })}
             </div>
-            {errors.timeSlot && (
-              <p className="text-red-500 text-sm mt-2">
-                {errors.timeSlot.message}
-              </p>
-            )}
-          </div>
-        )}
+          ) : (
+            <div className="text-center py-4 text-gray-500">
+              Lütfen bir tarih seçin
+            </div>
+          )}
+          {errors.timeSlot && (
+            <p className="text-red-500 text-sm mt-2">
+              {errors.timeSlot.message}
+            </p>
+          )}
+        </div>
 
         {/* Navigation Buttons */}
         <div className="flex gap-4 pt-4">
