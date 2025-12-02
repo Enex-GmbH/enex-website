@@ -98,10 +98,7 @@ export async function isDateFullyBooked(date: Date): Promise<boolean> {
       .select()
       .from(timeSlots)
       .where(
-        and(
-          eq(timeSlots.franchiseId, franchiseId),
-          eq(timeSlots.date, dateStr)
-        )
+        and(eq(timeSlots.franchiseId, franchiseId), eq(timeSlots.date, dateStr))
       );
 
     // If no slots exist, the date is available
@@ -122,4 +119,3 @@ export async function isDateFullyBooked(date: Date): Promise<boolean> {
     return false; // Default to available on error
   }
 }
-

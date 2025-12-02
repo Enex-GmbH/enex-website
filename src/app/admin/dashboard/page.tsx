@@ -59,7 +59,9 @@ export default function AdminDashboardPage() {
   const [editingBooking, setEditingBooking] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<Partial<Booking>>({});
   const [deletingBooking, setDeletingBooking] = useState<number | null>(null);
-  const [cancellingBooking, setCancellingBooking] = useState<number | null>(null);
+  const [cancellingBooking, setCancellingBooking] = useState<number | null>(
+    null
+  );
   const [newBookingsCount, setNewBookingsCount] = useState(0);
   const lastViewedTimestampRef = useRef<string | null>(null);
   const previousBookingIdsRef = useRef<Set<number>>(new Set());
@@ -364,15 +366,21 @@ export default function AdminDashboardPage() {
           </Card>
           <Card className="p-4">
             <div className="text-sm text-gray-600">Bestätigt</div>
-            <div className="text-2xl font-bold text-green-600">{stats.confirmed}</div>
+            <div className="text-2xl font-bold text-green-600">
+              {stats.confirmed}
+            </div>
           </Card>
           <Card className="p-4">
             <div className="text-sm text-gray-600">Ausstehend</div>
-            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+            <div className="text-2xl font-bold text-yellow-600">
+              {stats.pending}
+            </div>
           </Card>
           <Card className="p-4">
             <div className="text-sm text-gray-600">Storniert</div>
-            <div className="text-2xl font-bold text-red-600">{stats.cancelled}</div>
+            <div className="text-2xl font-bold text-red-600">
+              {stats.cancelled}
+            </div>
           </Card>
         </div>
 
@@ -474,7 +482,9 @@ export default function AdminDashboardPage() {
                       </Select>
                     </div>
                     <div>
-                      <label className="text-sm text-gray-600">Gesamtpreis (Cent)</label>
+                      <label className="text-sm text-gray-600">
+                        Gesamtpreis (Cent)
+                      </label>
                       <Input
                         type="number"
                         value={editForm.totalPrice}
@@ -516,7 +526,10 @@ export default function AdminDashboardPage() {
                         type="email"
                         value={editForm.customerEmail}
                         onChange={(e) =>
-                          setEditForm({ ...editForm, customerEmail: e.target.value })
+                          setEditForm({
+                            ...editForm,
+                            customerEmail: e.target.value,
+                          })
                         }
                       />
                     </div>
@@ -525,7 +538,10 @@ export default function AdminDashboardPage() {
                       <Input
                         value={editForm.customerPhone}
                         onChange={(e) =>
-                          setEditForm({ ...editForm, customerPhone: e.target.value })
+                          setEditForm({
+                            ...editForm,
+                            customerPhone: e.target.value,
+                          })
                         }
                       />
                     </div>
@@ -539,11 +555,16 @@ export default function AdminDashboardPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-sm text-gray-600">Postleitzahl</label>
+                      <label className="text-sm text-gray-600">
+                        Postleitzahl
+                      </label>
                       <Input
                         value={editForm.postalCode}
                         onChange={(e) =>
-                          setEditForm({ ...editForm, postalCode: e.target.value })
+                          setEditForm({
+                            ...editForm,
+                            postalCode: e.target.value,
+                          })
                         }
                       />
                     </div>
@@ -552,7 +573,10 @@ export default function AdminDashboardPage() {
                       <Input
                         value={editForm.parkingNotes || ""}
                         onChange={(e) =>
-                          setEditForm({ ...editForm, parkingNotes: e.target.value })
+                          setEditForm({
+                            ...editForm,
+                            parkingNotes: e.target.value,
+                          })
                         }
                       />
                     </div>
@@ -597,7 +621,9 @@ export default function AdminDashboardPage() {
                         <div className="flex items-start gap-3">
                           <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
                           <div>
-                            <p className="text-sm text-gray-500">Datum & Uhrzeit</p>
+                            <p className="text-sm text-gray-500">
+                              Datum & Uhrzeit
+                            </p>
                             <p className="font-medium">
                               {formatBookingDate(booking.date)} - {booking.time}
                             </p>
@@ -631,7 +657,9 @@ export default function AdminDashboardPage() {
                             <p className="font-medium">
                               {booking.currency === "EUR" ? "€" : ""}
                               {booking.totalPrice}
-                              {booking.currency === "EUR" ? "" : ` ${booking.currency}`}
+                              {booking.currency === "EUR"
+                                ? ""
+                                : ` ${booking.currency}`}
                             </p>
                           </div>
                         </div>
@@ -639,10 +667,15 @@ export default function AdminDashboardPage() {
                         <div>
                           <p className="text-sm text-gray-500">Kunde</p>
                           <p className="font-medium">
-                            {booking.customerFirstName} {booking.customerLastName}
+                            {booking.customerFirstName}{" "}
+                            {booking.customerLastName}
                           </p>
-                          <p className="text-sm text-gray-600">{booking.customerEmail}</p>
-                          <p className="text-sm text-gray-600">{booking.customerPhone}</p>
+                          <p className="text-sm text-gray-600">
+                            {booking.customerEmail}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {booking.customerPhone}
+                          </p>
                         </div>
                       </div>
 
@@ -650,7 +683,9 @@ export default function AdminDashboardPage() {
                         Array.isArray(booking.addons) &&
                         booking.addons.length > 0 && (
                           <div className="pt-2">
-                            <p className="text-sm text-gray-500 mb-1">Add-ons:</p>
+                            <p className="text-sm text-gray-500 mb-1">
+                              Add-ons:
+                            </p>
                             <div className="flex flex-wrap gap-2">
                               {(booking.addons as AddOn[]).map((addon, idx) => (
                                 <span
@@ -666,7 +701,9 @@ export default function AdminDashboardPage() {
                     </div>
 
                     <div className="flex flex-col gap-2 md:min-w-[200px]">
-                      <Link href={`/booking/confirmation?reference=${booking.reference}`}>
+                      <Link
+                        href={`/booking/confirmation?reference=${booking.reference}`}
+                      >
                         <Button variant="outline" className="w-full">
                           <Eye className="w-4 h-4 mr-2" />
                           Details
@@ -719,4 +756,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-

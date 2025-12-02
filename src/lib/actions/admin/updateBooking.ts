@@ -53,10 +53,7 @@ export async function updateBooking(
       .select()
       .from(bookings)
       .where(
-        and(
-          eq(bookings.id, bookingId),
-          eq(bookings.franchiseId, franchiseId)
-        )
+        and(eq(bookings.id, bookingId), eq(bookings.franchiseId, franchiseId))
       )
       .limit(1);
 
@@ -136,7 +133,10 @@ export async function updateBooking(
       });
 
       // Update time slot booking status if status changed to/from confirmed
-      if (updates.status === "confirmed" || existingBooking.status === "confirmed") {
+      if (
+        updates.status === "confirmed" ||
+        existingBooking.status === "confirmed"
+      ) {
         const bookingDate = updates.date || existingBooking.date;
         const bookingTime = updates.time || existingBooking.time;
 
@@ -163,9 +163,12 @@ export async function updateBooking(
     if (updates.postalCode) updateData.postalCode = updates.postalCode;
     if (updates.customerEmail) updateData.customerEmail = updates.customerEmail;
     if (updates.customerPhone) updateData.customerPhone = updates.customerPhone;
-    if (updates.customerFirstName) updateData.customerFirstName = updates.customerFirstName;
-    if (updates.customerLastName) updateData.customerLastName = updates.customerLastName;
-    if (updates.totalPrice !== undefined) updateData.totalPrice = updates.totalPrice;
+    if (updates.customerFirstName)
+      updateData.customerFirstName = updates.customerFirstName;
+    if (updates.customerLastName)
+      updateData.customerLastName = updates.customerLastName;
+    if (updates.totalPrice !== undefined)
+      updateData.totalPrice = updates.totalPrice;
     if (updates.notes) updateData.parkingNotes = updates.notes;
 
     // Update booking
@@ -183,6 +186,7 @@ export async function updateBooking(
     }
 
     // Track changes for email notification
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const changes: any = {};
     if (updates.date && updates.date !== existingBooking.date) {
       changes.date = { old: existingBooking.date, new: updatedBooking.date };
@@ -191,39 +195,93 @@ export async function updateBooking(
       changes.time = { old: existingBooking.time, new: updatedBooking.time };
     }
     if (updates.status && updates.status !== existingBooking.status) {
-      changes.status = { old: existingBooking.status, new: updatedBooking.status };
+      changes.status = {
+        old: existingBooking.status,
+        new: updatedBooking.status,
+      };
     }
     if (updates.address && updates.address !== existingBooking.address) {
-      changes.address = { old: existingBooking.address, new: updatedBooking.address };
+      changes.address = {
+        old: existingBooking.address,
+        new: updatedBooking.address,
+      };
     }
-    if (updates.postalCode && updates.postalCode !== existingBooking.postalCode) {
-      changes.postalCode = { old: existingBooking.postalCode, new: updatedBooking.postalCode };
+    if (
+      updates.postalCode &&
+      updates.postalCode !== existingBooking.postalCode
+    ) {
+      changes.postalCode = {
+        old: existingBooking.postalCode,
+        new: updatedBooking.postalCode,
+      };
     }
-    if (updates.totalPrice !== undefined && updates.totalPrice !== existingBooking.totalPrice) {
-      changes.totalPrice = { old: existingBooking.totalPrice, new: updatedBooking.totalPrice };
+    if (
+      updates.totalPrice !== undefined &&
+      updates.totalPrice !== existingBooking.totalPrice
+    ) {
+      changes.totalPrice = {
+        old: existingBooking.totalPrice,
+        new: updatedBooking.totalPrice,
+      };
     }
-    if (updates.customerEmail && updates.customerEmail !== existingBooking.customerEmail) {
-      changes.customerEmail = { old: existingBooking.customerEmail, new: updatedBooking.customerEmail };
+    if (
+      updates.customerEmail &&
+      updates.customerEmail !== existingBooking.customerEmail
+    ) {
+      changes.customerEmail = {
+        old: existingBooking.customerEmail,
+        new: updatedBooking.customerEmail,
+      };
     }
-    if (updates.customerPhone && updates.customerPhone !== existingBooking.customerPhone) {
-      changes.customerPhone = { old: existingBooking.customerPhone, new: updatedBooking.customerPhone };
+    if (
+      updates.customerPhone &&
+      updates.customerPhone !== existingBooking.customerPhone
+    ) {
+      changes.customerPhone = {
+        old: existingBooking.customerPhone,
+        new: updatedBooking.customerPhone,
+      };
     }
-    if (updates.customerFirstName && updates.customerFirstName !== existingBooking.customerFirstName) {
-      changes.customerFirstName = { old: existingBooking.customerFirstName, new: updatedBooking.customerFirstName };
+    if (
+      updates.customerFirstName &&
+      updates.customerFirstName !== existingBooking.customerFirstName
+    ) {
+      changes.customerFirstName = {
+        old: existingBooking.customerFirstName,
+        new: updatedBooking.customerFirstName,
+      };
     }
-    if (updates.customerLastName && updates.customerLastName !== existingBooking.customerLastName) {
-      changes.customerLastName = { old: existingBooking.customerLastName, new: updatedBooking.customerLastName };
+    if (
+      updates.customerLastName &&
+      updates.customerLastName !== existingBooking.customerLastName
+    ) {
+      changes.customerLastName = {
+        old: existingBooking.customerLastName,
+        new: updatedBooking.customerLastName,
+      };
     }
-    if (updates.notes && updates.notes !== (existingBooking.parkingNotes || "")) {
-      changes.notes = { old: existingBooking.parkingNotes || null, new: updatedBooking.parkingNotes || "" };
+    if (
+      updates.notes &&
+      updates.notes !== (existingBooking.parkingNotes || "")
+    ) {
+      changes.notes = {
+        old: existingBooking.parkingNotes || null,
+        new: updatedBooking.parkingNotes || "",
+      };
     }
 
     // Send email notification if there are changes
     if (Object.keys(changes).length > 0) {
       try {
-        const emailResult = await sendBookingUpdateEmail(updatedBooking, changes);
+        const emailResult = await sendBookingUpdateEmail(
+          updatedBooking,
+          changes
+        );
         if (!emailResult.success) {
-          console.error("Failed to send booking update email:", emailResult.error);
+          console.error(
+            "Failed to send booking update email:",
+            emailResult.error
+          );
           // Don't fail the update if email fails, just log it
         }
       } catch (emailError) {
@@ -247,4 +305,3 @@ export async function updateBooking(
     };
   }
 }
-

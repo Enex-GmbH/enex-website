@@ -10,11 +10,9 @@ import { headers } from "next/headers";
  * @param email - Customer email address
  * @returns Array of bookings or error
  */
-export async function getUserBookings(
-  email: string
-): Promise<{
+export async function getUserBookings(email: string): Promise<{
   success: boolean;
-  bookings?: typeof bookings.$inferSelect[];
+  bookings?: (typeof bookings.$inferSelect)[];
   message?: string;
 }> {
   try {
@@ -32,9 +30,7 @@ export async function getUserBookings(
     const userBookings = await db
       .select()
       .from(bookings)
-      .where(
-        eq(bookings.customerEmail, email)
-      )
+      .where(eq(bookings.customerEmail, email))
       .orderBy(desc(bookings.createdAt));
 
     return {
@@ -52,4 +48,3 @@ export async function getUserBookings(
     };
   }
 }
-

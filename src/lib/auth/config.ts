@@ -7,85 +7,85 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 
 export const authConfig: NextAuthConfig = {
-    secret: process.env.NEXTAUTH_SECRET,
-    trustHost: true, // Required for NextAuth v5
-    // Adapter is optional with JWT sessions, but we use it for user management
-    // Remove adapter if you continue to have issues - credentials provider works without it
-    adapter: DrizzleAdapter(db, {
-        usersTable: schema.users,
-        accountsTable: schema.accounts,
-        sessionsTable: schema.sessions,
-        verificationTokensTable: schema.verificationTokens,
+  secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true, // Required for NextAuth v5
+  // Adapter is optional with JWT sessions, but we use it for user management
+  // Remove adapter if you continue to have issues - credentials provider works without it
+  adapter: DrizzleAdapter(db, {
+    usersTable: schema.users,
+    accountsTable: schema.accounts,
+    sessionsTable: schema.sessions,
+    verificationTokensTable: schema.verificationTokens,
+  }),
+  providers: [
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            return null;
+          }
+
+          const user = await db.query.users.findFirst({
+            where: eq(schema.users.email, credentials.email as string),
+          });
+
+          if (!user || !user.password) {
+            return null;
+          }
+
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password as string,
+            user.password
+          );
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
+          return {
+            id: user.id.toString(),
+            email: user.email,
+            name: user.name || undefined,
+            role: user.role || "user",
+          };
+        } catch (error) {
+          console.error("Authorization error:", error);
+          return null;
+        }
+      },
     }),
-    providers: [
-        Credentials({
-            name: "credentials",
-            credentials: {
-                email: { label: "Email", type: "email" },
-                password: { label: "Password", type: "password" },
-            },
-            async authorize(credentials) {
-                try {
-                    if (!credentials?.email || !credentials?.password) {
-                        return null;
-                    }
-
-                    const user = await db.query.users.findFirst({
-                        where: eq(schema.users.email, credentials.email as string),
-                    });
-
-                    if (!user || !user.password) {
-                        return null;
-                    }
-
-                    const isPasswordValid = await bcrypt.compare(
-                        credentials.password as string,
-                        user.password
-                    );
-
-                    if (!isPasswordValid) {
-                        return null;
-                    }
-
-                    return {
-                        id: user.id.toString(),
-                        email: user.email,
-                        name: user.name || undefined,
-                        role: user.role || "user",
-                    };
-                } catch (error) {
-                    console.error("Authorization error:", error);
-                    return null;
-                }
-            },
-        }),
-    ],
-    session: {
-        strategy: "jwt",
+  ],
+  session: {
+    strategy: "jwt",
+  },
+  pages: {
+    signIn: "/login",
+    signOut: "/",
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        token.role = (user as any).role || "user";
+      }
+      return token;
     },
-    pages: {
-        signIn: "/login",
-        signOut: "/",
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+        session.user.role = (token.role as string) || "user";
+      }
+      return session;
     },
-    callbacks: {
-        async jwt({ token, user }) {
-            if (user) {
-                token.id = user.id;
-                token.email = user.email;
-                token.name = user.name;
-                token.role = (user as any).role || "user";
-            }
-            return token;
-        },
-        async session({ session, token }) {
-            if (session.user) {
-                session.user.id = token.id as string;
-                session.user.email = token.email as string;
-                session.user.name = token.name as string;
-                session.user.role = (token.role as string) || "user";
-            }
-            return session;
-        },
-    },
+  },
 } satisfies NextAuthConfig;
-

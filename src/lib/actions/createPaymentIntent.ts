@@ -60,8 +60,10 @@ export async function createPaymentIntent(
     console.error("Error creating payment intent:", error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Failed to create payment intent",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to create payment intent",
     };
   }
 }
-

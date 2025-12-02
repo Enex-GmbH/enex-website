@@ -18,7 +18,7 @@ export async function getAllBookings(filters?: {
   offset?: number;
 }): Promise<{
   success: boolean;
-  bookings?: typeof bookings.$inferSelect[];
+  bookings?: (typeof bookings.$inferSelect)[];
   total?: number;
   message?: string;
 }> {
@@ -73,9 +73,11 @@ export async function getAllBookings(filters?: {
       .orderBy(desc(bookings.createdAt));
 
     if (filters?.limit) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       query = query.limit(filters.limit) as any;
     }
     if (filters?.offset) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       query = query.offset(filters.offset) as any;
     }
 
@@ -97,4 +99,3 @@ export async function getAllBookings(filters?: {
     };
   }
 }
-

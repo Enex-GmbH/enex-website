@@ -87,12 +87,8 @@
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -151,12 +147,8 @@
           "name": "booking_events_franchise_id_franchises_id_fk",
           "tableFrom": "booking_events",
           "tableTo": "franchises",
-          "columnsFrom": [
-            "franchise_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["franchise_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -164,12 +156,8 @@
           "name": "booking_events_booking_id_bookings_id_fk",
           "tableFrom": "booking_events",
           "tableTo": "bookings",
-          "columnsFrom": [
-            "booking_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["booking_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -381,12 +369,8 @@
           "name": "bookings_franchise_id_franchises_id_fk",
           "tableFrom": "bookings",
           "tableTo": "franchises",
-          "columnsFrom": [
-            "franchise_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["franchise_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -396,9 +380,7 @@
         "bookings_reference_unique": {
           "name": "bookings_reference_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "reference"
-          ]
+          "columns": ["reference"]
         }
       },
       "policies": {},
@@ -456,9 +438,7 @@
         "franchises_slug_unique": {
           "name": "franchises_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -507,12 +487,8 @@
           "name": "password_reset_tokens_user_id_users_id_fk",
           "tableFrom": "password_reset_tokens",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -522,9 +498,7 @@
         "password_reset_tokens_token_unique": {
           "name": "password_reset_tokens_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -592,12 +566,8 @@
           "name": "payments_franchise_id_franchises_id_fk",
           "tableFrom": "payments",
           "tableTo": "franchises",
-          "columnsFrom": [
-            "franchise_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["franchise_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -605,12 +575,8 @@
           "name": "payments_booking_id_bookings_id_fk",
           "tableFrom": "payments",
           "tableTo": "bookings",
-          "columnsFrom": [
-            "booking_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["booking_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -656,12 +622,8 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -671,9 +633,7 @@
         "sessions_session_token_unique": {
           "name": "sessions_session_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "session_token"
-          ]
+          "columns": ["session_token"]
         }
       },
       "policies": {},
@@ -728,12 +688,8 @@
           "name": "time_slots_franchise_id_franchises_id_fk",
           "tableFrom": "time_slots",
           "tableTo": "franchises",
-          "columnsFrom": [
-            "franchise_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["franchise_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -741,12 +697,8 @@
           "name": "time_slots_booking_id_bookings_id_fk",
           "tableFrom": "time_slots",
           "tableTo": "bookings",
-          "columnsFrom": [
-            "booking_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["booking_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -813,9 +765,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},

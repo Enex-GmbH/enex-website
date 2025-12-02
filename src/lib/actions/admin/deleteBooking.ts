@@ -12,9 +12,7 @@ import { requireAdmin } from "../../auth/authorization";
  * @param bookingId - The booking ID to delete
  * @returns Success status or error
  */
-export async function deleteBooking(
-  bookingId: number
-): Promise<{
+export async function deleteBooking(bookingId: number): Promise<{
   success: boolean;
   message?: string;
 }> {
@@ -38,10 +36,7 @@ export async function deleteBooking(
       .select()
       .from(bookings)
       .where(
-        and(
-          eq(bookings.id, bookingId),
-          eq(bookings.franchiseId, franchiseId)
-        )
+        and(eq(bookings.id, bookingId), eq(bookings.franchiseId, franchiseId))
       )
       .limit(1);
 
@@ -70,9 +65,7 @@ export async function deleteBooking(
 
     // Delete related records (in order due to foreign keys)
     // Note: Payments might have foreign key constraints, so we handle them first
-    await db
-      .delete(payments)
-      .where(eq(payments.bookingId, bookingId));
+    await db.delete(payments).where(eq(payments.bookingId, bookingId));
 
     // Delete booking events
     await db
@@ -80,9 +73,7 @@ export async function deleteBooking(
       .where(eq(bookingEvents.bookingId, bookingId));
 
     // Delete the booking
-    await db
-      .delete(bookings)
-      .where(eq(bookings.id, bookingId));
+    await db.delete(bookings).where(eq(bookings.id, bookingId));
 
     return {
       success: true,
@@ -98,4 +89,3 @@ export async function deleteBooking(
     };
   }
 }
-

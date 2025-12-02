@@ -137,7 +137,9 @@ END:VCALENDAR`;
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               Rezervasyon bulunamadı
             </h1>
-            <p className="text-gray-600 mb-6">{error || "Rezervasyon bulunamadı"}</p>
+            <p className="text-gray-600 mb-6">
+              {error || "Rezervasyon bulunamadı"}
+            </p>
             <Button
               onClick={() => router.push("/")}
               className="bg-enex-primary hover:bg-enex-hover text-white"
@@ -165,7 +167,8 @@ END:VCALENDAR`;
             <span className="font-semibold">{booking.reference}</span>
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            Durum: <span className="font-medium capitalize">{booking.status}</span>
+            Durum:{" "}
+            <span className="font-medium capitalize">{booking.status}</span>
           </p>
         </div>
 
@@ -211,14 +214,18 @@ END:VCALENDAR`;
               </div>
 
               {/* Add-ons */}
-              {booking.addons && Array.isArray(booking.addons) && booking.addons.length > 0 && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Add-ons:</span>
-                  <span className="font-medium text-right max-w-[60%]">
-                    {(booking.addons as AddOn[]).map((a) => a.name).join(", ")}
-                  </span>
-                </div>
-              )}
+              {booking.addons &&
+                Array.isArray(booking.addons) &&
+                booking.addons.length > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Add-ons:</span>
+                    <span className="font-medium text-right max-w-[60%]">
+                      {(booking.addons as AddOn[])
+                        .map((a) => a.name)
+                        .join(", ")}
+                    </span>
+                  </div>
+                )}
 
               {/* Toll Fee */}
               {booking.tollFee && booking.tollFee > 0 && (
@@ -350,4 +357,3 @@ END:VCALENDAR`;
     </div>
   );
 }
-

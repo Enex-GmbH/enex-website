@@ -23,15 +23,14 @@ const defaultTimeSlots = ["09:30", "11:00", "13:00", "15:00", "17:00"];
 export default function DateTimeStep() {
   const router = useRouter();
   const { dateTime, setDateTime, isStepComplete } = useBookingStore();
-  
+
   // Initialize selectedDate: use stored date, or default to today
   // If stored date is in the past, reset to today
   const getInitialDate = (): Date => {
     const today = startOfDay(new Date());
     if (dateTime?.date) {
-      const storedDate = dateTime.date instanceof Date
-        ? dateTime.date
-        : new Date(dateTime.date);
+      const storedDate =
+        dateTime.date instanceof Date ? dateTime.date : new Date(dateTime.date);
       // If stored date is in the past, use today instead
       if (isBefore(startOfDay(storedDate), today)) {
         return new Date();
@@ -47,13 +46,13 @@ export default function DateTimeStep() {
   const [selectedTime, setSelectedTime] = useState<string | undefined>(
     dateTime?.timeSlot
   );
-  
+
   // Initialize weekStart to the week containing the selected date (or today)
   const getInitialWeekStart = (): Date => {
     const dateToUse = selectedDate || new Date();
     return startOfWeek(dateToUse, { weekStartsOn: 1 });
   };
-  
+
   const [weekStart, setWeekStart] = useState<Date>(getInitialWeekStart());
   const [availableSlots, setAvailableSlots] = useState<
     { time: string; available: boolean }[]
@@ -134,15 +133,15 @@ export default function DateTimeStep() {
   }, [selectedDate]);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  
+
   // Get today's date at start of day for comparison
   const today = startOfDay(new Date());
-  
+
   // Check if a date is in the past
   const isPastDate = (date: Date): boolean => {
     return isBefore(startOfDay(date), today);
   };
-  
+
   // Check if previous week would contain any valid (non-past) dates
   const canGoToPrevWeek = (): boolean => {
     const prevWeekStart = addDays(weekStart, -7);
@@ -209,8 +208,8 @@ export default function DateTimeStep() {
                       isSelected
                         ? "border-enex-primary bg-enex-primary text-white"
                         : isPast
-                        ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-50"
-                        : "border-gray-200 hover:border-enex-primary"
+                          ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-50"
+                          : "border-gray-200 hover:border-enex-primary"
                     )}
                   >
                     <span className="text-xs font-medium">{dayLabel}</span>
@@ -241,9 +240,7 @@ export default function DateTimeStep() {
             Saat Seçimi {!selectedDate && "(Önce bir tarih seçin)"}
           </label>
           {loadingSlots ? (
-            <div className="text-center py-4 text-gray-500">
-              Yükleniyor...
-            </div>
+            <div className="text-center py-4 text-gray-500">Yükleniyor...</div>
           ) : availableSlots.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {availableSlots.map((slot) => {

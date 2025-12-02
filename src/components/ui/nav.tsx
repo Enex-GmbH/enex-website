@@ -6,7 +6,11 @@ import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Menu, X, User, LogOut, Shield } from "lucide-react";
 
 export function Navigation() {
@@ -64,7 +68,10 @@ export function Navigation() {
           {status === "loading" ? (
             <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
           ) : session ? (
-            <Popover open={avatarDropdownOpen} onOpenChange={setAvatarDropdownOpen}>
+            <Popover
+              open={avatarDropdownOpen}
+              onOpenChange={setAvatarDropdownOpen}
+            >
               <PopoverTrigger asChild>
                 <button className="cursor-pointer hover:opacity-80 transition-opacity">
                   <Avatar className="h-10 w-10">
@@ -121,7 +128,10 @@ export function Navigation() {
                 </Button>
               </Link>
               <Link href="/register">
-                <Button size="sm" className="bg-enex-primary hover:bg-enex-hover text-white">
+                <Button
+                  size="sm"
+                  className="bg-enex-primary hover:bg-enex-hover text-white"
+                >
                   Registrieren
                 </Button>
               </Link>

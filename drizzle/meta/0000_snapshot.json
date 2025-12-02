@@ -217,9 +217,7 @@
         "bookings_reference_unique": {
           "name": "bookings_reference_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "reference"
-          ]
+          "columns": ["reference"]
         }
       },
       "policies": {},

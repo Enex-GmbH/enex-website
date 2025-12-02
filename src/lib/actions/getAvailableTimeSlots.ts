@@ -37,10 +37,7 @@ export async function getAvailableTimeSlots(
       .select()
       .from(timeSlots)
       .where(
-        and(
-          eq(timeSlots.franchiseId, franchiseId),
-          eq(timeSlots.date, dateStr)
-        )
+        and(eq(timeSlots.franchiseId, franchiseId), eq(timeSlots.date, dateStr))
       );
 
     // If no slots exist in DB, return all default slots as available
@@ -113,4 +110,3 @@ export async function getAvailableTimeSlotsForRange(
     return {};
   }
 }
-

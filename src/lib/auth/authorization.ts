@@ -24,15 +24,15 @@ export async function isAdmin(): Promise<boolean> {
  */
 export async function requireAdmin() {
   const user = await getCurrentUser();
-  
+
   if (!user) {
     redirect("/login");
   }
-  
+
   if (user.role !== "admin") {
     redirect("/account");
   }
-  
+
   return user;
 }
 
@@ -41,11 +41,10 @@ export async function requireAdmin() {
  */
 export async function requireAuth() {
   const user = await getCurrentUser();
-  
+
   if (!user) {
     redirect("/login");
   }
-  
+
   return user;
 }
-

@@ -39,7 +39,8 @@ const Plans = () => {
           <div>
             <h2 className="text-4xl font-bold">Ihr Auto. Unser Service.</h2>
             <p className="text-lg text-gray-500">
-              Wir bringen die Fahrzeugpflege zu Ihnen – schnell, flexibel, professionell.
+              Wir bringen die Fahrzeugpflege zu Ihnen – schnell, flexibel,
+              professionell.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -63,9 +64,12 @@ const Plans = () => {
                       {plan.key === "exclusivePlan" && "Exklusiv-Paket"}
                     </h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      {plan.key === "basicPlan" && "Schnelle persönliche Wäsche für Einzelpersonen"}
-                      {plan.key === "premiumPlan" && "Tiefenreinigung & Detailing für Einzelpersonen"}
-                      {plan.key === "exclusivePlan" && "Für Unternehmen mit mehreren Fahrzeugen konzipiert"}
+                      {plan.key === "basicPlan" &&
+                        "Schnelle persönliche Wäsche für Einzelpersonen"}
+                      {plan.key === "premiumPlan" &&
+                        "Tiefenreinigung & Detailing für Einzelpersonen"}
+                      {plan.key === "exclusivePlan" &&
+                        "Für Unternehmen mit mehreren Fahrzeugen konzipiert"}
                     </p>
                   </div>
 
@@ -75,15 +79,21 @@ const Plans = () => {
                       <>
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">Außenhandwäsche</span>
+                          <span className="text-sm text-gray-700">
+                            Außenhandwäsche
+                          </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">Innenraumsaugen & Fenster</span>
+                          <span className="text-sm text-gray-700">
+                            Innenraumsaugen & Fenster
+                          </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">Reifen- & Felgenreinigung</span>
+                          <span className="text-sm text-gray-700">
+                            Reifen- & Felgenreinigung
+                          </span>
                         </div>
                       </>
                     )}
@@ -91,19 +101,28 @@ const Plans = () => {
                       <>
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">Alles aus dem Basis-Paket</span>
+                          <span className="text-sm text-gray-700">
+                            Alles aus dem Basis-Paket
+                          </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">Wachs- & Polierfinish</span>
+                          <span className="text-sm text-gray-700">
+                            Wachs- & Polierfinish
+                          </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">Innenraum-Tiefenreinigung (Armaturenbrett, Konsole, Sitze)</span>
+                          <span className="text-sm text-gray-700">
+                            Innenraum-Tiefenreinigung (Armaturenbrett, Konsole,
+                            Sitze)
+                          </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">Reifenglanz + Fensterversiegelung</span>
+                          <span className="text-sm text-gray-700">
+                            Reifenglanz + Fensterversiegelung
+                          </span>
                         </div>
                       </>
                     )}
@@ -111,19 +130,28 @@ const Plans = () => {
                       <>
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">Professionelles Detailing für mehrere Firmenfahrzeuge</span>
+                          <span className="text-sm text-gray-700">
+                            Professionelles Detailing für mehrere
+                            Firmenfahrzeuge
+                          </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">Flottenmanagement-Terminplanung</span>
+                          <span className="text-sm text-gray-700">
+                            Flottenmanagement-Terminplanung
+                          </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">Prioritärer Support & flexible Zeitfenster</span>
+                          <span className="text-sm text-gray-700">
+                            Prioritärer Support & flexible Zeitfenster
+                          </span>
                         </div>
                         <div className="flex items-start gap-2">
                           <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">Individuelle Preisgestaltung pro Fahrzeug / Paket</span>
+                          <span className="text-sm text-gray-700">
+                            Individuelle Preisgestaltung pro Fahrzeug / Paket
+                          </span>
                         </div>
                       </>
                     )}
@@ -136,7 +164,8 @@ const Plans = () => {
                       <span className="text-sm text-gray-700">
                         {plan.key === "basicPlan" && "Dauer: ~4 Stunden"}
                         {plan.key === "premiumPlan" && "Dauer: ~4 Stunden"}
-                        {plan.key === "exclusivePlan" && "Dauer: bis zu 8 Stunden oder Ganztagesservice"}
+                        {plan.key === "exclusivePlan" &&
+                          "Dauer: bis zu 8 Stunden oder Ganztagesservice"}
                       </span>
                     </div>
 
@@ -149,7 +178,8 @@ const Plans = () => {
                       <span className="text-sm text-gray-700">
                         {plan.key === "basicPlan" && "Für: 1 Privatauto"}
                         {plan.key === "premiumPlan" && "Für: 1 Auto"}
-                        {plan.key === "exclusivePlan" && "Für: Unternehmen & Organisationen"}
+                        {plan.key === "exclusivePlan" &&
+                          "Für: Unternehmen & Organisationen"}
                       </span>
                     </div>
 
@@ -158,7 +188,8 @@ const Plans = () => {
                         <Euro className="h-4 w-4 text-enex-primary" />
                         <span className="text-sm font-semibold text-gray-900">
                           {plan.key === "basicPlan" && "Ab €60 (Kleinwagen)"}
-                          {plan.key === "premiumPlan" && "Ab €90 (Mittelklassewagen)"}
+                          {plan.key === "premiumPlan" &&
+                            "Ab €90 (Mittelklassewagen)"}
                         </span>
                       </div>
                     )}
@@ -166,9 +197,12 @@ const Plans = () => {
                     <div className="flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-enex-primary" />
                       <span className="text-sm text-gray-700">
-                        {plan.key === "basicPlan" && "Ideal für: regelmäßige Wartungsreinigung"}
-                        {plan.key === "premiumPlan" && "Ideal für: vierteljährliche Tiefenreinigung"}
-                        {plan.key === "exclusivePlan" && "Ideal für: Fuhrparkmanagement & Firmenwagen"}
+                        {plan.key === "basicPlan" &&
+                          "Ideal für: regelmäßige Wartungsreinigung"}
+                        {plan.key === "premiumPlan" &&
+                          "Ideal für: vierteljährliche Tiefenreinigung"}
+                        {plan.key === "exclusivePlan" &&
+                          "Ideal für: Fuhrparkmanagement & Firmenwagen"}
                       </span>
                     </div>
                   </div>

@@ -5,4 +5,3 @@ const { handlers, auth } = NextAuth(authConfig);
 
 export const { GET, POST } = handlers;
 export { auth };
-

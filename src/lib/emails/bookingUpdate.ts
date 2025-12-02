@@ -105,7 +105,7 @@ export async function sendBookingUpdateEmail(
     const newAddress = changes.address?.new || booking.address;
     const oldPostal = changes.postalCode?.old || booking.postalCode;
     const newPostal = changes.postalCode?.new || booking.postalCode;
-    
+
     if (oldAddress !== newAddress || oldPostal !== newPostal) {
       changesList.push(
         `<tr>
@@ -158,7 +158,7 @@ export async function sendBookingUpdateEmail(
   if (changes.customerFirstName || changes.customerLastName) {
     const oldName = `${changes.customerFirstName?.old || booking.customerFirstName} ${changes.customerLastName?.old || booking.customerLastName}`;
     const newName = `${changes.customerFirstName?.new || booking.customerFirstName} ${changes.customerLastName?.new || booking.customerLastName}`;
-    
+
     if (oldName !== newName) {
       changesList.push(
         `<tr>
@@ -175,7 +175,7 @@ export async function sendBookingUpdateEmail(
   if (changes.notes) {
     const oldNotes = changes.notes.old || "Keine";
     const newNotes = changes.notes.new || "Keine";
-    
+
     if (oldNotes !== newNotes) {
       changesList.push(
         `<tr>
@@ -334,12 +334,16 @@ export async function sendBookingCancellationEmail(
                   <td style="padding: 8px 0; font-weight: bold;">Gesamtpreis:</td>
                   <td style="padding: 8px 0;">${formatPrice(booking.totalPrice, booking.currency)}</td>
                 </tr>
-                ${reason ? `
+                ${
+                  reason
+                    ? `
                 <tr>
                   <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Grund:</td>
                   <td style="padding: 8px 0;">${reason}</td>
                 </tr>
-                ` : ""}
+                `
+                    : ""
+                }
               </table>
             </div>
 
@@ -374,4 +378,3 @@ export async function sendBookingCancellationEmail(
     };
   }
 }
-

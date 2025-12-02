@@ -77,7 +77,7 @@ export default function PaymentStep() {
     try {
       // Calculate final price with discount (in cents for consistency)
       const finalPriceInCents = Math.round(finalPrice.eur * 100);
-      
+
       // Step 1: Create booking in database with discounted price
       const bookingResult = await createBooking(
         {
@@ -106,9 +106,7 @@ export default function PaymentStep() {
       );
 
       if (!paymentIntentResult.success || !paymentIntentResult.clientSecret) {
-        alert(
-          paymentIntentResult.message || "Ödeme işlemi başlatılamadı"
-        );
+        alert(paymentIntentResult.message || "Ödeme işlemi başlatılamadı");
         setIsSubmitting(false);
         return;
       }

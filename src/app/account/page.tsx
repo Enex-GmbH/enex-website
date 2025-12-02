@@ -2,7 +2,17 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Package, Clock, Euro, CheckCircle2, XCircle, Loader2, Shield } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Package,
+  Clock,
+  Euro,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  Shield,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -63,7 +73,9 @@ export default function AccountPage() {
     switch (status) {
       case "confirmed":
         return (
-          <span className={`${baseClasses} bg-green-100 text-green-800 flex items-center gap-1`}>
+          <span
+            className={`${baseClasses} bg-green-100 text-green-800 flex items-center gap-1`}
+          >
             <CheckCircle2 className="w-4 h-4" />
             Bestätigt
           </span>
@@ -76,7 +88,9 @@ export default function AccountPage() {
         );
       case "cancelled":
         return (
-          <span className={`${baseClasses} bg-red-100 text-red-800 flex items-center gap-1`}>
+          <span
+            className={`${baseClasses} bg-red-100 text-red-800 flex items-center gap-1`}
+          >
             <XCircle className="w-4 h-4" />
             Storniert
           </span>
@@ -95,7 +109,9 @@ export default function AccountPage() {
       <Card className="p-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Mein Konto</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Mein Konto
+            </h1>
             <p className="text-gray-600">Verwalten Sie Ihre Buchungen</p>
           </div>
           {session?.user?.role === "admin" && (
@@ -126,7 +142,9 @@ export default function AccountPage() {
                       setBookings(result.bookings);
                       setError(null);
                     } else {
-                      setError(result.message || "Fehler beim Laden der Buchungen");
+                      setError(
+                        result.message || "Fehler beim Laden der Buchungen"
+                      );
                     }
                     setLoading(false);
                   })
@@ -142,7 +160,9 @@ export default function AccountPage() {
           </div>
         ) : bookings.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-600 mb-4">Sie haben noch keine Buchungen.</p>
+            <p className="text-gray-600 mb-4">
+              Sie haben noch keine Buchungen.
+            </p>
             <Link href="/">
               <Button className="bg-enex-primary hover:bg-enex-hover text-white">
                 Neue Buchung erstellen
@@ -155,7 +175,10 @@ export default function AccountPage() {
               Meine Buchungen ({bookings.length})
             </h2>
             {bookings.map((booking) => (
-              <Card key={booking.id} className="p-6 hover:shadow-md transition-shadow">
+              <Card
+                key={booking.id}
+                className="p-6 hover:shadow-md transition-shadow"
+              >
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                   <div className="flex-1 space-y-3">
                     {/* Header with Reference and Status */}
@@ -165,7 +188,12 @@ export default function AccountPage() {
                           Buchung #{booking.reference}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          Erstellt am {format(new Date(booking.createdAt || new Date()), "PPP", { locale: de })}
+                          Erstellt am{" "}
+                          {format(
+                            new Date(booking.createdAt || new Date()),
+                            "PPP",
+                            { locale: de }
+                          )}
                         </p>
                       </div>
                       {getStatusBadge(booking.status)}
@@ -177,7 +205,9 @@ export default function AccountPage() {
                       <div className="flex items-start gap-3">
                         <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
                         <div>
-                          <p className="text-sm text-gray-500">Datum & Uhrzeit</p>
+                          <p className="text-sm text-gray-500">
+                            Datum & Uhrzeit
+                          </p>
                           <p className="font-medium">
                             {formatBookingDate(booking.date)} - {booking.time}
                           </p>
@@ -214,34 +244,41 @@ export default function AccountPage() {
                           <p className="font-medium">
                             {booking.currency === "EUR" ? "€" : ""}
                             {booking.totalPrice}
-                            {booking.currency === "EUR" ? "" : ` ${booking.currency}`}
+                            {booking.currency === "EUR"
+                              ? ""
+                              : ` ${booking.currency}`}
                           </p>
                         </div>
                       </div>
                     </div>
 
                     {/* Add-ons */}
-                    {booking.addons && Array.isArray(booking.addons) && booking.addons.length > 0 && (
-                      <div className="pt-2">
-                        <p className="text-sm text-gray-500 mb-1">Add-ons:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {(booking.addons as AddOn[]).map((addon, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-sm"
-                            >
-                              {addon.name}
-                            </span>
-                          ))}
+                    {booking.addons &&
+                      Array.isArray(booking.addons) &&
+                      booking.addons.length > 0 && (
+                        <div className="pt-2">
+                          <p className="text-sm text-gray-500 mb-1">Add-ons:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {(booking.addons as AddOn[]).map((addon, idx) => (
+                              <span
+                                key={idx}
+                                className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-sm"
+                              >
+                                {addon.name}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     {/* Coupon */}
                     {booking.couponCode && (
                       <div className="pt-2">
                         <p className="text-sm text-gray-500">
-                          Kupon: <span className="font-medium text-green-600">{booking.couponCode}</span>
+                          Kupon:{" "}
+                          <span className="font-medium text-green-600">
+                            {booking.couponCode}
+                          </span>
                         </p>
                       </div>
                     )}
@@ -249,13 +286,18 @@ export default function AccountPage() {
 
                   {/* Actions */}
                   <div className="flex flex-col gap-2 md:min-w-[150px]">
-                    <Link href={`/booking/confirmation?reference=${booking.reference}`}>
+                    <Link
+                      href={`/booking/confirmation?reference=${booking.reference}`}
+                    >
                       <Button variant="outline" className="w-full">
                         Details anzeigen
                       </Button>
                     </Link>
                     {booking.status === "pending" && (
-                      <Button variant="outline" className="w-full text-red-600 hover:text-red-700">
+                      <Button
+                        variant="outline"
+                        className="w-full text-red-600 hover:text-red-700"
+                      >
                         Stornieren
                       </Button>
                     )}

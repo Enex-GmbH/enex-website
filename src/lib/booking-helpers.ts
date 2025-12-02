@@ -83,7 +83,13 @@ export function transformBookingStoreToDb(
   currency: string = "EUR",
   discountedPrice?: number // Optional discounted price (in cents for EUR)
 ): BookingDbData {
-  const { location, package: pkg, dateTime, contactDetails, payment } = storeData;
+  const {
+    location,
+    package: pkg,
+    dateTime,
+    contactDetails,
+    payment,
+  } = storeData;
 
   if (!location || !pkg || !dateTime || !contactDetails || !payment) {
     throw new Error("All booking steps must be completed");
@@ -91,7 +97,7 @@ export function transformBookingStoreToDb(
 
   // Calculate total price (using EUR as primary currency for now)
   let totalPrice = calculateTotalPrice(location, pkg, currency);
-  
+
   // Apply discount if provided (discountedPrice is in cents, convert to euros)
   if (discountedPrice !== undefined && currency === "EUR") {
     totalPrice = Math.round(discountedPrice / 100); // Convert from cents to euros
@@ -178,10 +184,6 @@ function calculateTotalPrice(
  * @returns Booking reference string
  */
 export function generateBookingReference(): string {
-  const randomPart = Math.random()
-    .toString(36)
-    .substring(2, 9)
-    .toUpperCase();
+  const randomPart = Math.random().toString(36).substring(2, 9).toUpperCase();
   return `ENX-${randomPart}`;
 }
-

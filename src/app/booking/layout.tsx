@@ -16,8 +16,12 @@ export default function BookingLayout({
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto py-8">
         {!isConfirmationPage && <BookingStepper />}
-        <div className={`${isConfirmationPage ? "" : "mt-8"} grid grid-cols-1 ${isConfirmationPage ? "" : "lg:grid-cols-3"} gap-6`}>
-          <div className={isConfirmationPage ? "" : "lg:col-span-2"}>{children}</div>
+        <div
+          className={`${isConfirmationPage ? "" : "mt-8"} grid grid-cols-1 ${isConfirmationPage ? "" : "lg:grid-cols-3"} gap-6`}
+        >
+          <div className={isConfirmationPage ? "" : "lg:col-span-2"}>
+            {children}
+          </div>
           {!isConfirmationPage && (
             <div className="lg:col-span-1">
               <BookingSummary />
@@ -28,4 +32,3 @@ export default function BookingLayout({
     </div>
   );
 }
-

@@ -11,22 +11,22 @@ import { eq } from "drizzle-orm";
 export function extractSubdomain(hostname: string): string | null {
   // Remove protocol if present
   const cleanHost = hostname.replace(/^https?:\/\//, "").split("/")[0];
-  
+
   // Split by dots
   const parts = cleanHost.split(".");
-  
+
   // If we have at least 3 parts (subdomain.domain.tld) or 4 parts (subdomain.domain.tld.something)
   if (parts.length >= 3) {
     const subdomain = parts[0];
-    
+
     // Check if it's the main site
     if (subdomain === "www" || subdomain === "enex") {
       return null;
     }
-    
+
     return subdomain;
   }
-  
+
   return null;
 }
 
@@ -39,24 +39,24 @@ export async function getFranchiseIdFromHostname(
   hostname: string
 ): Promise<number | null> {
   const subdomain = extractSubdomain(hostname);
-  
+
   if (!subdomain) {
     // Main site - return null (you may want to handle this differently)
     return null;
   }
-  
+
   // Query database for franchise by slug
   const franchise = await db
     .select()
     .from(franchises)
     .where(eq(franchises.slug, subdomain))
     .limit(1);
-  
+
   if (franchise.length === 0) {
     // Franchise not found - you may want to throw an error or return null
     return null;
   }
-  
+
   return franchise[0].id;
 }
 
@@ -70,19 +70,17 @@ export async function getFranchiseIdFromHeaders(
 ): Promise<number | null> {
   // Get hostname from headers
   let hostname: string | undefined;
-  
+
   if (headers instanceof Headers) {
     hostname = headers.get("host") || undefined;
   } else {
-    hostname = Array.isArray(headers.host) 
-      ? headers.host[0] 
-      : headers.host;
+    hostname = Array.isArray(headers.host) ? headers.host[0] : headers.host;
   }
-  
+
   if (!hostname) {
     return null;
   }
-  
+
   return getFranchiseIdFromHostname(hostname);
 }
 
@@ -94,4 +92,3 @@ export async function getFranchiseIdFromHeaders(
 export function getFranchiseSlugFromHostname(hostname: string): string | null {
   return extractSubdomain(hostname);
 }
-

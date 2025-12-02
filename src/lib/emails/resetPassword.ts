@@ -1,17 +1,17 @@
 import { resend } from "./client";
 
 export async function sendPasswordResetEmail(
-    email: string,
-    resetToken: string
+  email: string,
+  resetToken: string
 ): Promise<{ success: boolean; error?: string }> {
-    const resetUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/reset-password?token=${resetToken}`;
+  const resetUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/reset-password?token=${resetToken}`;
 
-    try {
-        const { error } = await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
-            to: email,
-            subject: "Passwort zurücksetzen",
-            html: `
+  try {
+    const { error } = await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
+      to: email,
+      subject: "Passwort zurücksetzen",
+      html: `
                 <!DOCTYPE html>
                 <html>
                 <head>
@@ -40,20 +40,19 @@ export async function sendPasswordResetEmail(
                 </body>
                 </html>
             `,
-        });
+    });
 
-        if (error) {
-            console.error("Error sending password reset email:", error);
-            return { success: false, error: error.message };
-        }
-
-        return { success: true };
-    } catch (error) {
-        console.error("Error sending password reset email:", error);
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : "Unknown error",
-        };
+    if (error) {
+      console.error("Error sending password reset email:", error);
+      return { success: false, error: error.message };
     }
-}
 
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}

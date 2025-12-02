@@ -109,7 +109,8 @@ export function PlacesAutocomplete({
 
   // Initialize autocomplete when script is loaded and input is ready
   useEffect(() => {
-    if (!isScriptLoaded || !inputRef.current || isInitialized || !window.google) return;
+    if (!isScriptLoaded || !inputRef.current || isInitialized || !window.google)
+      return;
 
     try {
       // Create autocomplete instance
@@ -142,19 +143,24 @@ export function PlacesAutocomplete({
         let city = "";
         let country = "";
 
-        place.address_components.forEach((component: { types: string[]; long_name: string }) => {
-          const types = component.types;
+        place.address_components.forEach(
+          (component: { types: string[]; long_name: string }) => {
+            const types = component.types;
 
-          if (types.includes("postal_code")) {
-            postalCode = component.long_name;
+            if (types.includes("postal_code")) {
+              postalCode = component.long_name;
+            }
+            if (
+              types.includes("locality") ||
+              types.includes("administrative_area_level_1")
+            ) {
+              city = component.long_name;
+            }
+            if (types.includes("country")) {
+              country = component.long_name;
+            }
           }
-          if (types.includes("locality") || types.includes("administrative_area_level_1")) {
-            city = component.long_name;
-          }
-          if (types.includes("country")) {
-            country = component.long_name;
-          }
-        });
+        );
 
         // Call onChange with the formatted address
         onChange(place.formatted_address);
@@ -199,4 +205,3 @@ export function PlacesAutocomplete({
     </div>
   );
 }
-

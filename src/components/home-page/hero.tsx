@@ -34,19 +34,25 @@ const HeroBlob = () => {
 
 function Hero() {
   const router = useRouter();
-  const { setPackage, setDateTime, setLocation, location, package: pkg, dateTime } = useBookingStore();
-  
+  const {
+    setPackage,
+    setDateTime,
+    setLocation,
+    location,
+    package: pkg,
+    dateTime,
+  } = useBookingStore();
+
   // Initialize date from store if available
   const getInitialDate = (): Date | undefined => {
     if (dateTime?.date) {
-      const storedDate = dateTime.date instanceof Date
-        ? dateTime.date
-        : new Date(dateTime.date);
+      const storedDate =
+        dateTime.date instanceof Date ? dateTime.date : new Date(dateTime.date);
       return storedDate;
     }
     return undefined;
   };
-  
+
   const [postalCode, setPostalCode] = useState(location?.postalCode || "");
   const [carType, setCarType] = useState(pkg?.carType || "");
   const [date, setDate] = useState<Date | undefined>(getInitialDate());
@@ -58,11 +64,13 @@ function Hero() {
   // Sync date state with store when it changes
   useEffect(() => {
     if (dateTime?.date) {
-      const storedDate = dateTime.date instanceof Date
-        ? dateTime.date
-        : new Date(dateTime.date);
+      const storedDate =
+        dateTime.date instanceof Date ? dateTime.date : new Date(dateTime.date);
       // Only update if different to avoid unnecessary re-renders
-      if (!date || format(date, "yyyy-MM-dd") !== format(storedDate, "yyyy-MM-dd")) {
+      if (
+        !date ||
+        format(date, "yyyy-MM-dd") !== format(storedDate, "yyyy-MM-dd")
+      ) {
         setDate(storedDate);
       }
     }
@@ -135,7 +143,7 @@ function Hero() {
       const code = parseInt(postalCode);
       const zone = code >= 10000 && code <= 14999 ? "inside" : "outside";
       const tollFeeEur = zone === "outside" ? 9 : 0;
-      
+
       setLocation({
         postalCode: postalCode,
         address: "", // Will be filled in location step
@@ -161,7 +169,8 @@ function Hero() {
               Sauber. Smart. Mühelos.
             </h1>
             <p className="mt-4 text-balance text-[clamp(1rem,2vw+0.25rem,1.25rem)] text-gray-600">
-              Erlebe die nächste Generation der Autopflege – überall, wo du bist.
+              Erlebe die nächste Generation der Autopflege – überall, wo du
+              bist.
             </p>
 
             {/* SEARCH AREA */}
@@ -183,7 +192,7 @@ function Hero() {
               <div className="flex items-center gap-2 w-full">
                 <CarFront className="h-6 w-6 text-enex-primary" />
                 <Select
-                  value={carType} 
+                  value={carType}
                   onValueChange={(value) => {
                     setCarType(value);
                     // Immediately save to store when car type is selected
@@ -218,7 +227,10 @@ function Hero() {
                       {date ? format(date, "PPP", { locale: de }) : "Datum"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 !bg-white" align="start">
+                  <PopoverContent
+                    className="w-auto p-0 !bg-white"
+                    align="start"
+                  >
                     {isLoadingBookedDates && fullyBookedDates.length === 0 ? (
                       <div className="p-4 text-center text-sm text-gray-500 min-w-[300px]">
                         Yükleniyor...

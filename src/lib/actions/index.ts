@@ -4,10 +4,7 @@ export {
   getAvailableTimeSlots,
   getAvailableTimeSlotsForRange,
 } from "./getAvailableTimeSlots";
-export {
-  getFullyBookedDates,
-  isDateFullyBooked,
-} from "./getFullyBookedDates";
+export { getFullyBookedDates, isDateFullyBooked } from "./getFullyBookedDates";
 export { applyCoupon } from "./applyCoupon";
 export { createPaymentIntent } from "./createPaymentIntent";
 export { createBooking } from "./createBooking";
@@ -24,4 +21,3 @@ export { getAllBookings } from "./admin/getAllBookings";
 export { updateBooking } from "./admin/updateBooking";
 export { deleteBooking } from "./admin/deleteBooking";
 export { cancelBooking } from "./admin/cancelBooking";
-

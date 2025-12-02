@@ -42,10 +42,7 @@ export async function cancelBooking(
       .select()
       .from(bookings)
       .where(
-        and(
-          eq(bookings.id, bookingId),
-          eq(bookings.franchiseId, franchiseId)
-        )
+        and(eq(bookings.id, bookingId), eq(bookings.franchiseId, franchiseId))
       )
       .limit(1);
 
@@ -108,9 +105,15 @@ export async function cancelBooking(
 
     // Send cancellation email to customer
     try {
-      const emailResult = await sendBookingCancellationEmail(updatedBooking, reason);
+      const emailResult = await sendBookingCancellationEmail(
+        updatedBooking,
+        reason
+      );
       if (!emailResult.success) {
-        console.error("Failed to send booking cancellation email:", emailResult.error);
+        console.error(
+          "Failed to send booking cancellation email:",
+          emailResult.error
+        );
         // Don't fail the cancellation if email fails, just log it
       }
     } catch (emailError) {
@@ -133,4 +136,3 @@ export async function cancelBooking(
     };
   }
 }
-

@@ -114,7 +114,10 @@ export async function confirmBooking(
     try {
       const emailResult = await sendBookingConfirmationEmail(updatedBooking);
       if (!emailResult.success) {
-        console.error("Failed to send booking confirmation email:", emailResult.error);
+        console.error(
+          "Failed to send booking confirmation email:",
+          emailResult.error
+        );
         // Don't fail the booking confirmation if email fails, just log it
       }
     } catch (emailError) {
@@ -142,9 +145,7 @@ export async function confirmBooking(
  * @param reference - Booking reference number
  * @returns Booking data or null
  */
-export async function getBookingByReference(
-  reference: string
-): Promise<{
+export async function getBookingByReference(reference: string): Promise<{
   success: boolean;
   booking?: typeof bookings.$inferSelect;
   message?: string;
@@ -194,4 +195,3 @@ export async function getBookingByReference(
     };
   }
 }
-

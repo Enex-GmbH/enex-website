@@ -46,7 +46,8 @@ export async function createBooking(
     if (!franchiseId) {
       return {
         success: false,
-        message: "Franchise not found. Please access the site via a franchise subdomain.",
+        message:
+          "Franchise not found. Please access the site via a franchise subdomain.",
       };
     }
 
@@ -116,7 +117,10 @@ export async function createBooking(
       .limit(1);
 
     // Check if slot is already booked or has a pending booking
-    if (slotCheck.length > 0 && (slotCheck[0].isBooked || slotCheck[0].bookingId)) {
+    if (
+      slotCheck.length > 0 &&
+      (slotCheck[0].isBooked || slotCheck[0].bookingId)
+    ) {
       return {
         success: false,
         message: "This time slot is no longer available",
@@ -181,4 +185,3 @@ export async function createBooking(
     };
   }
 }
-
