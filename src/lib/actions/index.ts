@@ -19,3 +19,9 @@ export { register } from "./auth/register";
 export { requestPasswordReset } from "./auth/resetPassword";
 export { updatePassword } from "./auth/updatePassword";
 
+// Admin actions
+export { getAllBookings } from "./admin/getAllBookings";
+export { updateBooking } from "./admin/updateBooking";
+export { deleteBooking } from "./admin/deleteBooking";
+export { cancelBooking } from "./admin/cancelBooking";
+

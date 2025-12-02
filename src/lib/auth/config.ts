@@ -51,6 +51,7 @@ export const authConfig: NextAuthConfig = {
                         id: user.id.toString(),
                         email: user.email,
                         name: user.name || undefined,
+                        role: user.role || "user",
                     };
                 } catch (error) {
                     console.error("Authorization error:", error);
@@ -72,6 +73,7 @@ export const authConfig: NextAuthConfig = {
                 token.id = user.id;
                 token.email = user.email;
                 token.name = user.name;
+                token.role = (user as any).role || "user";
             }
             return token;
         },
@@ -80,6 +82,7 @@ export const authConfig: NextAuthConfig = {
                 session.user.id = token.id as string;
                 session.user.email = token.email as string;
                 session.user.name = token.name as string;
+                session.user.role = (token.role as string) || "user";
             }
             return session;
         },

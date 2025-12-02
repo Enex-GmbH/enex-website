@@ -7,7 +7,7 @@ import { useSession, signOut } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Menu, X, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut, Shield } from "lucide-react";
 
 export function Navigation() {
   const { data: session, status } = useSession();
@@ -93,6 +93,16 @@ export function Navigation() {
                     <User className="h-4 w-4" />
                     <span>Profil</span>
                   </Link>
+                  {session.user?.role === "admin" && (
+                    <Link
+                      href="/admin/dashboard"
+                      className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-gray-100 transition-colors"
+                      onClick={() => setAvatarDropdownOpen(false)}
+                    >
+                      <Shield className="h-4 w-4" />
+                      <span>Admin Dashboard</span>
+                    </Link>
+                  )}
                   <button
                     className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-gray-100 transition-colors text-left w-full"
                     onClick={handleLogout}
@@ -163,13 +173,24 @@ export function Navigation() {
               </>
             )}
             {session && (
-              <Link
-                href="/account"
-                className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
-                onClick={() => setOpen(false)}
-              >
-                Profil
-              </Link>
+              <>
+                <Link
+                  href="/account"
+                  className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
+                  onClick={() => setOpen(false)}
+                >
+                  Profil
+                </Link>
+                {session.user?.role === "admin" && (
+                  <Link
+                    href="/admin/dashboard"
+                    className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
+                    onClick={() => setOpen(false)}
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
+              </>
             )}
           </nav>
         </div>

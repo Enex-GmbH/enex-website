@@ -10,6 +10,7 @@ import { useBookingStore } from "@/store/booking-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PlacesAutocomplete } from "@/components/ui/places-autocomplete";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { MapPin } from "lucide-react";
@@ -27,17 +28,18 @@ export default function LocationStep() {
     formState: { errors },
   } = useForm<LocationFormData>({
     resolver: zodResolver(locationSchema),
-    defaultValues: location || {
-      postalCode: "",
-      address: "",
-      zone: "inside",
-      hasWater: false,
-      hasElectricity: false,
+    defaultValues: {
+      postalCode: location?.postalCode || "",
+      address: location?.address || "",
+      zone: location?.zone || "inside",
+      hasWater: location?.hasWater ?? false,
+      hasElectricity: location?.hasElectricity ?? false,
     },
   });
 
   const postalCode = watch("postalCode");
   const zone = watch("zone");
+  const address = watch("address");
 
   // Calculate toll fee based on zone
   useEffect(() => {
@@ -60,6 +62,22 @@ export default function LocationStep() {
       }
     }
   }, [postalCode, setValue]);
+
+  // Handle place selection from Google Places autocomplete
+  const handlePlaceSelect = (place: {
+    address: string;
+    postalCode?: string;
+    city?: string;
+    country?: string;
+  }) => {
+    // Update address
+    setValue("address", place.address);
+
+    // Update postal code if provided
+    if (place.postalCode) {
+      setValue("postalCode", place.postalCode);
+    }
+  };
 
   const onSubmit = (data: LocationFormData) => {
     setLocation({
@@ -102,11 +120,12 @@ export default function LocationStep() {
           <label htmlFor="address" className="block text-sm font-medium mb-2">
             Adres (autocomplete)
           </label>
-          <Input
+          <PlacesAutocomplete
             id="address"
-            type="text"
+            value={address || ""}
+            onChange={(value) => setValue("address", value)}
+            onPlaceSelect={handlePlaceSelect}
             placeholder="Straße und Hausnummer"
-            {...register("address")}
             className={errors.address ? "border-red-500" : ""}
           />
           {errors.address && (
@@ -114,22 +133,6 @@ export default function LocationStep() {
               {errors.address.message}
             </p>
           )}
-        </div>
-
-        {/* Zone & Toll Info */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <div className="flex items-start gap-2">
-            <MapPin className="w-5 h-5 text-enex-primary flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-medium">
-                Bölge:{" "}
-                {zone === "inside" ? "Çekirdek / Dış halka" : "Dış bölge"}
-              </p>
-              <p className="text-sm text-gray-600 mt-1">
-                Yol ücreti: {tollFee.eur}€ / {tollFee.dkr}₺
-              </p>
-            </div>
-          </div>
         </div>
 
         {/* Utilities */}

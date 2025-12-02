@@ -5,6 +5,7 @@ import { bookings, payments, timeSlots, bookingEvents } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { getFranchiseIdFromHeaders } from "../franchise";
 import { headers } from "next/headers";
+import { sendBookingConfirmationEmail } from "../emails/bookingConfirmation";
 
 /**
  * Confirm a booking after successful payment
@@ -60,13 +61,21 @@ export async function confirmBooking(
     // so we'll do sequential operations. Consider using a transaction wrapper if needed.
 
     // 1. Update booking status to "confirmed"
-    await db
+    const [updatedBooking] = await db
       .update(bookings)
       .set({
         status: "confirmed",
         stripePaymentIntentId: paymentIntentId,
       })
-      .where(eq(bookings.id, bookingId));
+      .where(eq(bookings.id, bookingId))
+      .returning();
+
+    if (!updatedBooking) {
+      return {
+        success: false,
+        message: "Failed to update booking status",
+      };
+    }
 
     // 2. Mark time slot as booked
     await db
@@ -100,6 +109,18 @@ export async function confirmBooking(
       fromStatus: "pending",
       toStatus: "confirmed",
     });
+
+    // 5. Send confirmation email to customer
+    try {
+      const emailResult = await sendBookingConfirmationEmail(updatedBooking);
+      if (!emailResult.success) {
+        console.error("Failed to send booking confirmation email:", emailResult.error);
+        // Don't fail the booking confirmation if email fails, just log it
+      }
+    } catch (emailError) {
+      console.error("Error sending booking confirmation email:", emailError);
+      // Don't fail the booking confirmation if email fails
+    }
 
     return {
       success: true,

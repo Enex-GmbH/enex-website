@@ -7,8 +7,8 @@ export const locationSchema = z.object({
     .min(5, "Bitte geben Sie eine gültige Postleitzahl ein"),
   address: z.string().min(5, "Bitte geben Sie eine vollständige Adresse ein"),
   zone: z.enum(["inside", "outside"]),
-  hasWater: z.boolean().default(false),
-  hasElectricity: z.boolean().default(false),
+  hasWater: z.boolean(),
+  hasElectricity: z.boolean(),
 });
 
 export type LocationFormData = z.infer<typeof locationSchema>;
@@ -38,9 +38,22 @@ export type PackageFormData = z.infer<typeof packageSchema>;
 
 // Step 3: Date/Time Schema
 export const dateTimeSchema = z.object({
-  date: z.date({
-    required_error: "Bitte wählen Sie ein Datum",
-  }),
+  date: z
+    .date({
+      required_error: "Bitte wählen Sie ein Datum",
+    })
+    .refine(
+      (date) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(date);
+        selectedDate.setHours(0, 0, 0, 0);
+        return selectedDate >= today;
+      },
+      {
+        message: "Sie können kein Datum in der Vergangenheit auswählen",
+      }
+    ),
   timeSlot: z.string().min(1, "Bitte wählen Sie eine Uhrzeit"),
 });
 

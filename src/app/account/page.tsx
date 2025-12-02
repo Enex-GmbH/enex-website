@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Package, Clock, Euro, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Calendar, MapPin, Package, Clock, Euro, CheckCircle2, XCircle, Loader2, Shield } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -93,8 +93,20 @@ export default function AccountPage() {
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
       <Card className="p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Mein Konto</h1>
-        <p className="text-gray-600 mb-8">Verwalten Sie Ihre Buchungen</p>
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Mein Konto</h1>
+            <p className="text-gray-600">Verwalten Sie Ihre Buchungen</p>
+          </div>
+          {session?.user?.role === "admin" && (
+            <Link href="/admin/dashboard">
+              <Button className="bg-enex-primary hover:bg-enex-hover text-white">
+                <Shield className="w-4 h-4 mr-2" />
+                Admin Dashboard
+              </Button>
+            </Link>
+          )}
+        </div>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12">
@@ -106,8 +118,9 @@ export default function AccountPage() {
             <p className="text-red-600 mb-4">{error}</p>
             <Button
               onClick={() => {
+                if (!session?.user?.email) return;
                 setLoading(true);
-                getUserBookings(userEmail)
+                getUserBookings(session.user.email)
                   .then((result) => {
                     if (result.success && result.bookings) {
                       setBookings(result.bookings);

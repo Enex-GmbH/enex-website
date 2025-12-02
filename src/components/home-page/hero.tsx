@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { Input } from "../ui/input";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { CalendarDays, CarFront, MapPin, Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -33,14 +34,39 @@ const HeroBlob = () => {
 
 function Hero() {
   const router = useRouter();
-  const { setPackage, setDateTime } = useBookingStore();
-  const [selectedPlace, setSelectedPlace] = useState("");
-  const [carType, setCarType] = useState("");
-  const [date, setDate] = useState<Date | undefined>(undefined);
+  const { setPackage, setDateTime, setLocation, location, package: pkg, dateTime } = useBookingStore();
+  
+  // Initialize date from store if available
+  const getInitialDate = (): Date | undefined => {
+    if (dateTime?.date) {
+      const storedDate = dateTime.date instanceof Date
+        ? dateTime.date
+        : new Date(dateTime.date);
+      return storedDate;
+    }
+    return undefined;
+  };
+  
+  const [postalCode, setPostalCode] = useState(location?.postalCode || "");
+  const [carType, setCarType] = useState(pkg?.carType || "");
+  const [date, setDate] = useState<Date | undefined>(getInitialDate());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [fullyBookedDates, setFullyBookedDates] = useState<string[]>([]);
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
   const [isLoadingBookedDates, setIsLoadingBookedDates] = useState(false);
+
+  // Sync date state with store when it changes
+  useEffect(() => {
+    if (dateTime?.date) {
+      const storedDate = dateTime.date instanceof Date
+        ? dateTime.date
+        : new Date(dateTime.date);
+      // Only update if different to avoid unnecessary re-renders
+      if (!date || format(date, "yyyy-MM-dd") !== format(storedDate, "yyyy-MM-dd")) {
+        setDate(storedDate);
+      }
+    }
+  }, [dateTime?.date]);
 
   // Fetch fully booked dates on component mount
   useEffect(() => {
@@ -102,19 +128,22 @@ function Hero() {
   );
 
   const handleSearch = () => {
-    // Pre-fill booking store with hero form data
-    if (carType) {
-      setPackage({
-        carType: carType as CarType,
-        selectedPlan: "basic", // Default plan
-        addOns: [],
-      });
-    }
-
-    if (date) {
-      setDateTime({
-        date: date,
-        timeSlot: "09:30", // Default time slot
+    // Pre-fill postal code in location store if provided
+    // (Car type and date are already saved immediately when selected)
+    if (postalCode && postalCode.length >= 5) {
+      // Determine zone based on postal code (simplified logic)
+      const code = parseInt(postalCode);
+      const zone = code >= 10000 && code <= 14999 ? "inside" : "outside";
+      const tollFeeEur = zone === "outside" ? 9 : 0;
+      
+      setLocation({
+        postalCode: postalCode,
+        address: "", // Will be filled in location step
+        zone: zone,
+        tollFeeEur: tollFeeEur,
+        tollFeeDkr: 0,
+        hasWater: location?.hasWater || false,
+        hasElectricity: location?.hasElectricity || false,
       });
     }
 
@@ -137,27 +166,35 @@ function Hero() {
 
             {/* SEARCH AREA */}
             <div className="mt-8 flex flex-col gap-3 rounded-md border border-border bg-background/60 p-4 backdrop-blur-lg shadow-sm">
-              {/* Location */}
+              {/* Location - PLZ Input */}
               <div className="flex items-center gap-2 w-full">
                 <MapPin className="h-6 w-6 text-enex-primary" />
-                <Select value={selectedPlace} onValueChange={setSelectedPlace}>
-                  <SelectTrigger className="w-full !h-12">
-                    <SelectValue placeholder="Standort" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Berlin">Berlin</SelectItem>
-                    <SelectItem value="Hamburg">Hamburg</SelectItem>
-                    <SelectItem value="Munich">München</SelectItem>
-                    <SelectItem value="Cologne">Köln</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  type="text"
+                  placeholder="PLZ (z.B. 10115)"
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  className="w-full !h-12"
+                  maxLength={5}
+                />
               </div>
 
               {/* Car type */}
               <div className="flex items-center gap-2 w-full">
                 <CarFront className="h-6 w-6 text-enex-primary" />
-                <Select value={carType} onValueChange={setCarType}>
-                  <SelectTrigger className="w-full !h-12">
+                <Select
+                  value={carType} 
+                  onValueChange={(value) => {
+                    setCarType(value);
+                    // Immediately save to store when car type is selected
+                    setPackage({
+                      carType: value as CarType,
+                      selectedPlan: pkg?.selectedPlan || "basic", // Keep existing plan or default
+                      addOns: pkg?.addOns || [],
+                    });
+                  }}
+                >
+                  <SelectTrigger className="w-full !h-12 !bg-white !text-gray-900">
                     <SelectValue placeholder="Fahrzeugtyp" />
                   </SelectTrigger>
                   <SelectContent>
@@ -176,12 +213,12 @@ function Hero() {
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
-                      className="w-[calc(100%-32px)] !h-12 justify-start text-left font-normal text-gray-700"
+                      className="w-[calc(100%-32px)] !h-12 justify-start text-left font-normal text-gray-900 !bg-white"
                     >
                       {date ? format(date, "PPP", { locale: de }) : "Datum"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent className="w-auto p-0 !bg-white" align="start">
                     {isLoadingBookedDates && fullyBookedDates.length === 0 ? (
                       <div className="p-4 text-center text-sm text-gray-500 min-w-[300px]">
                         Yükleniyor...
@@ -195,6 +232,11 @@ function Hero() {
                           // Only allow selection if date is not disabled
                           if (selectedDate && !isDateDisabled(selectedDate)) {
                             setDate(selectedDate);
+                            // Immediately save to store when date is selected
+                            setDateTime({
+                              date: selectedDate,
+                              timeSlot: dateTime?.timeSlot || "09:30", // Keep existing time slot or default
+                            });
                             setIsCalendarOpen(false);
                           }
                         }}

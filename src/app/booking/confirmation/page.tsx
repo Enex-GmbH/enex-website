@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { format, parse } from "date-fns";
 import { de } from "date-fns/locale";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { getBookingByReference } from "@/lib/actions";
 import type { bookings } from "@/lib/db/schema";
 import type { AddOn } from "@/store/booking-store";
@@ -16,6 +17,7 @@ type Booking = typeof bookings.$inferSelect;
 export default function ConfirmationPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session } = useSession();
   const bookingReferenceParam = searchParams.get("reference");
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,8 +88,8 @@ END:VCALENDAR`;
   };
 
   const handleManageBooking = () => {
-    // Navigate to booking management (to be implemented)
-    router.push("/");
+    // Navigate to account page where user can manage bookings
+    router.push("/account");
   };
 
   const handleNewBooking = () => {
@@ -318,13 +320,15 @@ END:VCALENDAR`;
             Takvime ekle (.ics)
           </Button>
 
-          <Button
-            onClick={handleManageBooking}
-            variant="outline"
-            className="flex-1"
-          >
-            Rezervasyonu yönet
-          </Button>
+          {session?.user && (
+            <Button
+              onClick={handleManageBooking}
+              variant="outline"
+              className="flex-1"
+            >
+              Rezervasyonu yönet
+            </Button>
+          )}
         </div>
 
         <div className="mt-6 p-4 bg-blue-50 rounded-lg">

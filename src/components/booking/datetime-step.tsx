@@ -13,7 +13,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { format, addDays, startOfWeek } from "date-fns";
+import { format, addDays, startOfWeek, isBefore, startOfDay } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { getAvailableTimeSlots } from "@/lib/actions/getAvailableTimeSlots";
@@ -25,11 +25,18 @@ export default function DateTimeStep() {
   const { dateTime, setDateTime, isStepComplete } = useBookingStore();
   
   // Initialize selectedDate: use stored date, or default to today
+  // If stored date is in the past, reset to today
   const getInitialDate = (): Date => {
+    const today = startOfDay(new Date());
     if (dateTime?.date) {
-      return dateTime.date instanceof Date
+      const storedDate = dateTime.date instanceof Date
         ? dateTime.date
         : new Date(dateTime.date);
+      // If stored date is in the past, use today instead
+      if (isBefore(startOfDay(storedDate), today)) {
+        return new Date();
+      }
+      return storedDate;
     }
     return new Date(); // Default to today
   };
@@ -127,9 +134,26 @@ export default function DateTimeStep() {
   }, [selectedDate]);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  
+  // Get today's date at start of day for comparison
+  const today = startOfDay(new Date());
+  
+  // Check if a date is in the past
+  const isPastDate = (date: Date): boolean => {
+    return isBefore(startOfDay(date), today);
+  };
+  
+  // Check if previous week would contain any valid (non-past) dates
+  const canGoToPrevWeek = (): boolean => {
+    const prevWeekStart = addDays(weekStart, -7);
+    const prevWeekLastDay = addDays(prevWeekStart, 6);
+    return !isPastDate(prevWeekLastDay);
+  };
 
   const handlePrevWeek = () => {
-    setWeekStart(addDays(weekStart, -7));
+    if (canGoToPrevWeek()) {
+      setWeekStart(addDays(weekStart, -7));
+    }
   };
 
   const handleNextWeek = () => {
@@ -159,6 +183,7 @@ export default function DateTimeStep() {
               variant="outline"
               size="sm"
               onClick={handlePrevWeek}
+              disabled={!canGoToPrevWeek()}
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -169,6 +194,7 @@ export default function DateTimeStep() {
                   selectedDate &&
                   format(selectedDate, "yyyy-MM-dd") ===
                     format(day, "yyyy-MM-dd");
+                const isPast = isPastDate(day);
                 const dayLabel = format(day, "EEE", { locale: de });
                 const dateLabel = format(day, "d");
 
@@ -176,11 +202,14 @@ export default function DateTimeStep() {
                   <button
                     key={day.toISOString()}
                     type="button"
-                    onClick={() => setSelectedDate(day)}
+                    onClick={() => !isPast && setSelectedDate(day)}
+                    disabled={isPast}
                     className={cn(
                       "flex flex-col items-center px-4 py-2 rounded-lg border-2 transition-colors min-w-[60px]",
                       isSelected
                         ? "border-enex-primary bg-enex-primary text-white"
+                        : isPast
+                        ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-50"
                         : "border-gray-200 hover:border-enex-primary"
                     )}
                   >
