@@ -43,6 +43,20 @@
       "when": 1764591217120,
       "tag": "0005_spicy_vision",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1764883876296,
+      "tag": "0006_abnormal_ender_wiggin",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1764920233070,
+      "tag": "0007_tan_onslaught",
+      "breakpoints": true
     }
   ]
 }

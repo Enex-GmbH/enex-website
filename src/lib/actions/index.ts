@@ -15,9 +15,17 @@ export { getUserBookings } from "./getUserBookings";
 export { register } from "./auth/register";
 export { requestPasswordReset } from "./auth/resetPassword";
 export { updatePassword } from "./auth/updatePassword";
+export { updateProfile } from "./auth/updateProfile";
+export { changePassword } from "./auth/changePassword";
+export { deleteAccount } from "./auth/deleteAccount";
+export { getUserProfile } from "./auth/getUserProfile";
+export { checkUserStatus } from "./auth/checkUserStatus";
 
 // Admin actions
 export { getAllBookings } from "./admin/getAllBookings";
 export { updateBooking } from "./admin/updateBooking";
 export { deleteBooking } from "./admin/deleteBooking";
 export { cancelBooking } from "./admin/cancelBooking";
+export { getAllUsers } from "./admin/getAllUsers";
+export { updateUser } from "./admin/updateUser";
+export { toggleUserStatus } from "./admin/toggleUserStatus";

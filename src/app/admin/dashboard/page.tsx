@@ -7,21 +7,18 @@ import {
   Calendar,
   MapPin,
   Package,
-  Clock,
   Euro,
   CheckCircle2,
   XCircle,
   Loader2,
   Search,
-  Filter,
   Edit,
   Trash2,
   Ban,
   Eye,
-  Plus,
-  Minus,
   RefreshCw,
   Bell,
+  Users,
 } from "lucide-react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
@@ -352,6 +349,12 @@ export default function AdminDashboardPage() {
               />
               Aktualisieren
             </Button>
+            <Link href="/admin/users">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Benutzer
+              </Button>
+            </Link>
             <Link href="/account">
               <Button variant="outline">Zurück zum Konto</Button>
             </Link>

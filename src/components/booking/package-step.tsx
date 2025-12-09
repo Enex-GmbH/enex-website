@@ -66,16 +66,21 @@ export default function PackageStep() {
     handleSubmit,
     formState: { errors },
   } = useForm<PackageFormData>({
-    resolver: zodResolver(packageSchema),
-    defaultValues: pkg || {
-      carType: undefined,
-      selectedPlan: undefined,
-      addOns: [],
+    resolver: zodResolver(packageSchema) as any,
+    defaultValues: {
+      carType: pkg?.carType,
+      selectedPlan: pkg?.selectedPlan,
+      addOns: pkg?.addOns || [],
     },
   });
 
   const carType = watch("carType");
   const selectedPlan = watch("selectedPlan");
+
+  // Sync selectedAddOns with form state
+  useEffect(() => {
+    setValue("addOns", selectedAddOns);
+  }, [selectedAddOns, setValue]);
 
   useEffect(() => {
     if (!isStepComplete(1)) {
@@ -103,7 +108,7 @@ export default function PackageStep() {
   const onSubmit = (data: PackageFormData) => {
     setPackage({
       ...data,
-      addOns: selectedAddOns,
+      addOns: data.addOns || selectedAddOns,
     });
     router.push("/booking/datetime");
   };

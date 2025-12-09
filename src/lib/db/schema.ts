@@ -139,8 +139,11 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   emailVerified: timestamp("email_verified"),
   name: varchar("name", { length: 255 }),
+  phone: varchar("phone", { length: 40 }),
   password: varchar("password", { length: 255 }).notNull(),
   role: varchar("role", { length: 20 }).notNull().default("user"), // 'user' or 'admin'
+  deactivated: boolean("deactivated").notNull().default(false), // Account deactivation status
+  deletedAt: timestamp("deleted_at"), // For soft delete
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -163,8 +166,7 @@ export const accounts = pgTable("accounts", {
 });
 
 export const sessions = pgTable("sessions", {
-  id: serial("id").primaryKey(),
-  sessionToken: varchar("session_token", { length: 255 }).notNull().unique(),
+  sessionToken: varchar("session_token", { length: 255 }).primaryKey(),
   userId: integer("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),

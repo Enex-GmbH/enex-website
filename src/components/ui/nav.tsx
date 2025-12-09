@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Menu, X, User, LogOut, Shield } from "lucide-react";
+import { Menu, X, User, LogOut, Shield, Settings } from "lucide-react";
 
 export function Navigation() {
   const { data: session, status } = useSession();
@@ -98,6 +98,14 @@ export function Navigation() {
                     onClick={() => setAvatarDropdownOpen(false)}
                   >
                     <User className="h-4 w-4" />
+                    <span>Buchungen</span>
+                  </Link>
+                  <Link
+                    href="/profile"
+                    className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-gray-100 transition-colors"
+                    onClick={() => setAvatarDropdownOpen(false)}
+                  >
+                    <Settings className="h-4 w-4" />
                     <span>Profil</span>
                   </Link>
                   {session.user?.role === "admin" && (
@@ -186,6 +194,13 @@ export function Navigation() {
               <>
                 <Link
                   href="/account"
+                  className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
+                  onClick={() => setOpen(false)}
+                >
+                  Buchungen
+                </Link>
+                <Link
+                  href="/profile"
                   className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
                   onClick={() => setOpen(false)}
                 >

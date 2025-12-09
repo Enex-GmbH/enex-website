@@ -6,7 +6,7 @@ import { CheckCircle2, Calendar, Download, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format, parse } from "date-fns";
 import { de } from "date-fns/locale";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { getBookingByReference } from "@/lib/actions";
 import type { bookings } from "@/lib/db/schema";
@@ -14,7 +14,7 @@ import type { AddOn } from "@/store/booking-store";
 
 type Booking = typeof bookings.$inferSelect;
 
-export default function ConfirmationPage() {
+function ConfirmationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
@@ -355,5 +355,24 @@ END:VCALENDAR`;
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function ConfirmationPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-3xl mx-auto">
+          <Card className="p-8">
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-enex-primary mb-4" />
+              <p className="text-gray-600">Rezervasyon yükleniyor...</p>
+            </div>
+          </Card>
+        </div>
+      }
+    >
+      <ConfirmationContent />
+    </Suspense>
   );
 }

@@ -15,12 +15,8 @@ export type LocationFormData = z.infer<typeof locationSchema>;
 
 // Step 2: Package Schema
 export const packageSchema = z.object({
-  carType: z.enum(["Sedan", "SUV", "Hatchback", "Coupe"], {
-    required_error: "Bitte wählen Sie einen Fahrzeugtyp",
-  }),
-  selectedPlan: z.enum(["basic", "premium", "exclusive"], {
-    required_error: "Bitte wählen Sie ein Paket",
-  }),
+  carType: z.enum(["Sedan", "SUV", "Hatchback", "Coupe"]),
+  selectedPlan: z.enum(["basic", "premium", "exclusive"]),
   addOns: z
     .array(
       z.object({
@@ -40,7 +36,7 @@ export type PackageFormData = z.infer<typeof packageSchema>;
 export const dateTimeSchema = z.object({
   date: z
     .date({
-      required_error: "Bitte wählen Sie ein Datum",
+      error: (issue) => issue.input === undefined ? "Bitte wählen Sie ein Datum" : "Ungültiges Datum",
     })
     .refine(
       (date) => {

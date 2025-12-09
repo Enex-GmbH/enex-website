@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -13,11 +13,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
+import { checkUserStatus } from "@/lib/actions";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Check if user was logged out due to deactivation
+  useEffect(() => {
+    const deactivated = searchParams.get("deactivated");
+    if (deactivated === "true") {
+      setError(
+        "Ihr Konto wurde deaktiviert. Bitte kontaktieren Sie den Administrator für weitere Informationen."
+      );
+    }
+  }, [searchParams]);
 
   const {
     register,
@@ -32,6 +44,17 @@ export default function LoginPage() {
     setError(null);
 
     try {
+      // First check if user exists and is deactivated
+      const statusCheck = await checkUserStatus(data.email);
+      
+      if (statusCheck.exists && statusCheck.isDeactivated) {
+        setError(
+          "Ihr Konto wurde deaktiviert. Bitte kontaktieren Sie den Administrator für weitere Informationen."
+        );
+        setIsLoading(false);
+        return;
+      }
+
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
@@ -48,7 +71,14 @@ export default function LoginPage() {
       router.push("/account");
       router.refresh();
     } catch (err) {
-      setError("Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.");
+      // Check if error is due to account deactivation
+      if (err instanceof Error && err.message === "ACCOUNT_DEACTIVATED") {
+        setError(
+          "Ihr Konto wurde deaktiviert. Bitte kontaktieren Sie uns für weitere Informationen."
+        );
+      } else {
+        setError("Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.");
+      }
       setIsLoading(false);
     }
   };
@@ -137,5 +167,27 @@ export default function LoginPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center px-4 py-12">
+        <Card className="w-full max-w-md p-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded mb-6"></div>
+            <div className="space-y-4">
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

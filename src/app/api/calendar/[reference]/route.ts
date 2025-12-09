@@ -82,10 +82,11 @@ END:VCALENDAR`;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { reference: string } }
+  { params }: { params: Promise<{ reference: string }> }
 ) {
   try {
-    const reference = params.reference.replace(".ics", "");
+    const { reference: ref } = await params;
+    const reference = ref.replace(".ics", "");
     const franchiseId = 1; // TODO: Get from headers if needed
 
     const [booking] = await db

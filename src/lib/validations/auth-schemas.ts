@@ -31,3 +31,28 @@ export const resetPasswordSchema = z.object({
 });
 
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+
+export const updateProfileSchema = z.object({
+  name: z.string().min(2, "Der Name muss mindestens 2 Zeichen lang sein").optional(),
+  email: z.string().email("Bitte geben Sie eine gültige E-Mail-Adresse ein").optional(),
+  phone: z
+    .string()
+    .optional()
+    .transform((val) => (val === "" || !val ? null : val))
+    .nullable(),
+});
+
+export type UpdateProfileFormData = z.infer<typeof updateProfileSchema>;
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Bitte geben Sie Ihr aktuelles Passwort ein"),
+  newPassword: z
+    .string()
+    .min(8, "Das Passwort muss mindestens 8 Zeichen lang sein"),
+  confirmPassword: z.string().min(1, "Bitte bestätigen Sie Ihr neues Passwort"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Die Passwörter stimmen nicht überein",
+  path: ["confirmPassword"],
+});
+
+export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
