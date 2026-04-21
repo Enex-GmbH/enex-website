@@ -322,7 +322,7 @@ export default function AdminDashboardPage() {
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-3xl font-bold text-gray-900">
-                  Admin Dashboard
+                  Verwaltung
                 </h1>
                 {newBookingsCount > 0 && (
                   <span className="relative">
@@ -687,7 +687,7 @@ export default function AdminDashboardPage() {
                         booking.addons.length > 0 && (
                           <div className="pt-2">
                             <p className="text-sm text-gray-500 mb-1">
-                              Add-ons:
+                              Zusatzoptionen:
                             </p>
                             <div className="flex flex-wrap gap-2">
                               {(booking.addons as AddOn[]).map((addon, idx) => (

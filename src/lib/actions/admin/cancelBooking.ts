@@ -5,6 +5,7 @@ import { bookings, timeSlots, bookingEvents } from "../../db/schema";
 import { eq, and } from "drizzle-orm";
 import { headers } from "next/headers";
 import { requireAdmin } from "../../auth/authorization";
+import { resolveFranchiseId } from "../../franchise";
 import { sendBookingCancellationEmail } from "../../emails/bookingUpdate";
 
 /**
@@ -27,15 +28,7 @@ export async function cancelBooking(
     await requireAdmin();
 
     const headersList = await headers();
-    // const franchiseId = await getFranchiseIdFromHeaders(headersList);
-    const franchiseId = 1;
-
-    if (!franchiseId) {
-      return {
-        success: false,
-        message: "Franchise not found",
-      };
-    }
+    const franchiseId = await resolveFranchiseId(headersList);
 
     // Get booking
     const [booking] = await db

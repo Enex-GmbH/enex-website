@@ -1,8 +1,12 @@
 import { db } from "@/lib/db/client";
 import { sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { assertMigrationAllowed } from "@/lib/api/migrate-guard";
 
-export async function POST() {
+export async function POST(request: Request) {
+  const denied = assertMigrationAllowed(request);
+  if (denied) return denied;
+
   try {
     // Add phone and deleted_at columns if they don't exist
     await db.execute(

@@ -3,15 +3,16 @@
 import { db } from "../db/client";
 import { bookings, payments, timeSlots, bookingEvents } from "../db/schema";
 import { eq, and } from "drizzle-orm";
-import { getFranchiseIdFromHeaders } from "../franchise";
+import { resolveFranchiseId } from "../franchise";
 import { headers } from "next/headers";
 import { sendBookingConfirmationEmail } from "../emails/bookingConfirmation";
+import { assertConfirmationAmountMatchesBooking } from "../payments/assert-booking-total";
 
 /**
  * Confirm a booking after successful payment
  * Updates booking status, marks time slot as booked, creates payment record, and logs event
  * @param bookingId - The booking ID to confirm
- * @param paymentIntentId - Stripe payment intent ID
+ * @param paymentIntentId - Placeholder until phase 2 (Stripe); stored for audit trail
  * @param amount - Payment amount in cents
  * @returns Success status or error
  */
@@ -24,19 +25,9 @@ export async function confirmBooking(
   message?: string;
 }> {
   try {
-    // Get franchise ID from headers
     const headersList = await headers();
-    // const franchiseId = await getFranchiseIdFromHeaders(headersList);
-    const franchiseId = 1;
+    const franchiseId = await resolveFranchiseId(headersList);
 
-    if (!franchiseId) {
-      return {
-        success: false,
-        message: "Franchise not found",
-      };
-    }
-
-    // Get booking to verify it exists and is in pending status
     const [booking] = await db
       .select()
       .from(bookings)
@@ -53,6 +44,14 @@ export async function confirmBooking(
       return {
         success: false,
         message: "Booking not found or already confirmed",
+      };
+    }
+
+    const amountCheck = assertConfirmationAmountMatchesBooking(booking, amount);
+    if (!amountCheck.ok) {
+      return {
+        success: false,
+        message: amountCheck.message,
       };
     }
 
@@ -152,15 +151,7 @@ export async function getBookingByReference(reference: string): Promise<{
 }> {
   try {
     const headersList = await headers();
-    // const franchiseId = await getFranchiseIdFromHeaders(headersList);
-    const franchiseId = 1;
-
-    if (!franchiseId) {
-      return {
-        success: false,
-        message: "Franchise not found",
-      };
-    }
+    const franchiseId = await resolveFranchiseId(headersList);
 
     const [booking] = await db
       .select()

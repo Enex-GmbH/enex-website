@@ -44,10 +44,9 @@ function LoginForm() {
     setError(null);
 
     try {
-      // First check if user exists and is deactivated
       const statusCheck = await checkUserStatus(data.email);
-      
-      if (statusCheck.exists && statusCheck.isDeactivated) {
+
+      if (statusCheck.isDeactivated) {
         setError(
           "Ihr Konto wurde deaktiviert. Bitte kontaktieren Sie den Administrator für weitere Informationen."
         );

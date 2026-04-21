@@ -5,7 +5,7 @@ export const locationSchema = z.object({
   postalCode: z
     .string()
     .min(5, "Bitte geben Sie eine gültige Postleitzahl ein"),
-  address: z.string().min(5, "Bitte geben Sie eine vollständige Adresse ein"),
+  address: z.string().min(5, "Bitte geben Sie eine vollständige Adresse ein").optional(), // Temporarily optional - field is hidden
   zone: z.enum(["inside", "outside"]),
   hasWater: z.boolean(),
   hasElectricity: z.boolean(),
@@ -15,7 +15,7 @@ export type LocationFormData = z.infer<typeof locationSchema>;
 
 // Step 2: Package Schema
 export const packageSchema = z.object({
-  carType: z.enum(["Sedan", "SUV", "Hatchback", "Coupe"]),
+  carType: z.enum(["kleinwagen", "standardwagen", "suv"]),
   selectedPlan: z.enum(["basic", "premium", "exclusive"]),
   addOns: z
     .array(
@@ -23,7 +23,6 @@ export const packageSchema = z.object({
         id: z.string(),
         name: z.string(),
         priceEur: z.number(),
-        priceDkr: z.number(),
         durationMinutes: z.number(),
       })
     )

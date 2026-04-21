@@ -3,7 +3,7 @@
 import { db } from "../db/client";
 import { timeSlots } from "../db/schema";
 import { eq, and } from "drizzle-orm";
-import { getFranchiseIdFromHeaders } from "../franchise";
+import { resolveFranchiseId } from "../franchise";
 import { headers } from "next/headers";
 import { formatDateForDb } from "../booking-helpers";
 
@@ -16,19 +16,10 @@ export async function getAvailableTimeSlots(
   date: Date
 ): Promise<{ time: string; available: boolean }[]> {
   try {
-    // Get franchise ID from headers
     const headersList = await headers();
-    let franchiseId = await getFranchiseIdFromHeaders(headersList);
+    const franchiseId = await resolveFranchiseId(headersList);
 
-    // Default time slots if none exist in DB
     const defaultTimeSlots = ["09:30", "11:00", "13:00", "15:00", "17:00"];
-
-    // If no franchise ID (e.g., localhost or main site), use default franchise ID for development
-    // This should match the franchiseId used in createBooking
-    // TODO: Remove this hardcoded value and use environment variable or proper franchise setup
-    if (!franchiseId) {
-      franchiseId = 1; // Default franchise ID for development/testing
-    }
 
     const dateStr = formatDateForDb(date);
 
@@ -87,11 +78,7 @@ export async function getAvailableTimeSlotsForRange(
 ): Promise<Record<string, { time: string; available: boolean }[]>> {
   try {
     const headersList = await headers();
-    const franchiseId = await getFranchiseIdFromHeaders(headersList);
-
-    if (!franchiseId) {
-      return {};
-    }
+    await resolveFranchiseId(headersList);
 
     const result: Record<string, { time: string; available: boolean }[]> = {};
     const currentDate = new Date(startDate);

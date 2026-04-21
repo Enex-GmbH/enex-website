@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PlacesAutocomplete } from "@/components/ui/places-autocomplete";
+import { PostalCodeSelect } from "@/components/ui/postal-code-select";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { MapPin } from "lucide-react";
@@ -18,7 +19,7 @@ import { MapPin } from "lucide-react";
 export default function LocationStep() {
   const router = useRouter();
   const { location, setLocation } = useBookingStore();
-  const [tollFee, setTollFee] = useState({ eur: 0, dkr: 0 });
+  const [tollFeeEur, setTollFeeEur] = useState(0);
 
   const {
     register,
@@ -44,18 +45,21 @@ export default function LocationStep() {
   // Calculate toll fee based on zone
   useEffect(() => {
     if (zone === "outside") {
-      setTollFee({ eur: 9, dkr: 0 }); // 9€ toll for outside zone
+      setTollFeeEur(9);
     } else {
-      setTollFee({ eur: 0, dkr: 0 });
+      setTollFeeEur(0);
     }
   }, [zone]);
 
-  // Determine zone based on postal code (simplified logic)
+  // Determine zone based on postal code
+  // Pforzheim and Karlsruhe postal codes are inside the service zone
   useEffect(() => {
     if (postalCode && postalCode.length >= 5) {
-      const code = parseInt(postalCode);
-      // Example: Berlin postal codes 10000-14999 are inside
-      if (code >= 10000 && code <= 14999) {
+      // Check if postal code is in supported cities (Pforzheim or Karlsruhe)
+      const pforzheimCodes = ["75172", "75173", "75175", "75177", "75179", "75180", "75181", "75217", "75223", "75210", "75196"];
+      const karlsruheCodes = ["76131", "76133", "76135", "76137", "76139", "76149", "76185", "76187", "76189", "76227", "76228", "76327", "76307"];
+      
+      if (pforzheimCodes.includes(postalCode) || karlsruheCodes.includes(postalCode)) {
         setValue("zone", "inside");
       } else {
         setValue("zone", "outside");
@@ -63,34 +67,23 @@ export default function LocationStep() {
     }
   }, [postalCode, setValue]);
 
-  // Handle place selection from Google Places autocomplete
-  const handlePlaceSelect = (place: {
-    address: string;
-    postalCode?: string;
-    city?: string;
-    country?: string;
-  }) => {
-    // Update address
+  // Handle place selection from Google Places autocomplete (address only — PLZ stays on dropdown)
+  const handlePlaceSelect = (place: { address: string }) => {
     setValue("address", place.address);
-
-    // Update postal code if provided
-    if (place.postalCode) {
-      setValue("postalCode", place.postalCode);
-    }
   };
 
   const onSubmit = (data: LocationFormData) => {
     setLocation({
       ...data,
-      tollFeeEur: tollFee.eur,
-      tollFeeDkr: tollFee.dkr,
+      address: data.address ?? "",
+      tollFeeEur,
     });
     router.push("/booking/package");
   };
 
   return (
     <Card className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Rezervasyon 1/5 - Konum</h1>
+      <h1 className="text-2xl font-bold mb-6">Buchung 1/5 – Standort</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Postal Code */}
@@ -101,11 +94,12 @@ export default function LocationStep() {
           >
             PLZ
           </label>
-          <Input
-            id="postalCode"
-            type="text"
-            placeholder="z.B. 10115"
-            {...register("postalCode")}
+          <PostalCodeSelect
+            value={postalCode}
+            onValueChange={(value) => {
+              setValue("postalCode", value);
+            }}
+            placeholder="PLZ auswählen"
             className={errors.postalCode ? "border-red-500" : ""}
           />
           {errors.postalCode && (
@@ -118,7 +112,7 @@ export default function LocationStep() {
         {/* Address */}
         <div>
           <label htmlFor="address" className="block text-sm font-medium mb-2">
-            Adres (autocomplete)
+            Adresse (Autocomplete)
           </label>
           <PlacesAutocomplete
             id="address"
@@ -145,7 +139,7 @@ export default function LocationStep() {
               className="w-4 h-4 text-enex-primary"
             />
             <label htmlFor="hasWater" className="text-sm">
-              Su var
+              Wasseranschluss vorhanden
             </label>
           </div>
 
@@ -157,7 +151,7 @@ export default function LocationStep() {
               className="w-4 h-4 text-enex-primary"
             />
             <label htmlFor="hasElectricity" className="text-sm">
-              Elektrik var
+              Stromanschluss vorhanden
             </label>
           </div>
         </div>
@@ -167,7 +161,7 @@ export default function LocationStep() {
           type="submit"
           className="w-full bg-enex-primary hover:bg-enex-hover text-white"
         >
-          Devam
+          Weiter
         </Button>
       </form>
     </Card>

@@ -48,7 +48,7 @@ export default function DetailsStep() {
 
   return (
     <Card className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Rezervasyon 4/5 - Detaylar</h1>
+      <h1 className="text-2xl font-bold mb-6">Buchung 4/5 – Ihre Angaben</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Name Fields */}
@@ -58,7 +58,7 @@ export default function DetailsStep() {
               htmlFor="firstName"
               className="block text-sm font-medium mb-2"
             >
-              Ad
+              Vorname
             </label>
             <Input
               id="firstName"
@@ -78,7 +78,7 @@ export default function DetailsStep() {
               htmlFor="lastName"
               className="block text-sm font-medium mb-2"
             >
-              Soyad
+              Nachname
             </label>
             <Input
               id="lastName"
@@ -97,7 +97,7 @@ export default function DetailsStep() {
         {/* Email */}
         <div>
           <label htmlFor="email" className="block text-sm font-medium mb-2">
-            E-posta
+            E-Mail
           </label>
           <Input
             id="email"
@@ -132,7 +132,7 @@ export default function DetailsStep() {
             htmlFor="licensePlate"
             className="block text-sm font-medium mb-2"
           >
-            Plaka (opsiyonel)
+            Kennzeichen (optional)
           </label>
           <Input id="licensePlate" type="text" {...register("licensePlate")} />
         </div>
@@ -140,7 +140,7 @@ export default function DetailsStep() {
         {/* Car Make/Model (Optional) */}
         <div>
           <label htmlFor="carMake" className="block text-sm font-medium mb-2">
-            Marka/Model
+            Marke/Modell
           </label>
           <Input
             id="carMake"
@@ -156,7 +156,7 @@ export default function DetailsStep() {
             htmlFor="parkingNote"
             className="block text-sm font-medium mb-2"
           >
-            Adres notu (park/erişim)
+            Hinweis zu Parken/Zugang
           </label>
           <textarea
             id="parkingNote"
@@ -172,7 +172,7 @@ export default function DetailsStep() {
           <div className="flex items-center gap-2">
             <input type="checkbox" id="hasWater" disabled className="w-4 h-4" />
             <label htmlFor="hasWater" className="text-sm">
-              Su var
+              Wasseranschluss vorhanden
             </label>
           </div>
 
@@ -184,7 +184,7 @@ export default function DetailsStep() {
               className="w-4 h-4"
             />
             <label htmlFor="hasElectricity" className="text-sm">
-              Elektrik var
+              Stromanschluss vorhanden
             </label>
           </div>
         </div>
@@ -197,13 +197,13 @@ export default function DetailsStep() {
             onClick={() => router.back()}
             className="flex-1"
           >
-            Ödemeye geç
+            Zurück
           </Button>
           <Button
             type="submit"
             className="flex-1 bg-enex-primary hover:bg-enex-hover text-white"
           >
-            Devam
+            Weiter
           </Button>
         </div>
       </form>

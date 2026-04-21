@@ -5,6 +5,7 @@ import { bookings } from "../../db/schema";
 import { desc, eq, and, or, like } from "drizzle-orm";
 import { headers } from "next/headers";
 import { requireAdmin } from "../../auth/authorization";
+import { resolveFranchiseId } from "../../franchise";
 
 /**
  * Get all bookings for admin dashboard
@@ -27,15 +28,7 @@ export async function getAllBookings(filters?: {
     await requireAdmin();
 
     const headersList = await headers();
-    // const franchiseId = await getFranchiseIdFromHeaders(headersList);
-    const franchiseId = 1;
-
-    if (!franchiseId) {
-      return {
-        success: false,
-        message: "Franchise not found",
-      };
-    }
+    const franchiseId = await resolveFranchiseId(headersList);
 
     // Build where conditions
     const conditions = [eq(bookings.franchiseId, franchiseId)];

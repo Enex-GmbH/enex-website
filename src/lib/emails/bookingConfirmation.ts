@@ -3,6 +3,7 @@ import { format, parse } from "date-fns";
 import { de } from "date-fns/locale";
 import type { bookings } from "@/lib/db/schema";
 import type { AddOn } from "@/store/booking-store";
+import { buildWebcalCalendarUrl } from "@/lib/calendar-ics-token";
 
 type Booking = typeof bookings.$inferSelect;
 
@@ -41,7 +42,7 @@ function generateICSFile(booking: Booking): string {
   const description = `ENEX Fahrzeugpflege Service
 Buchungsnummer: ${booking.reference}
 Paket: ${booking.plan} - ${booking.carType}
-Add-ons: ${addonsList}
+Zusatzoptionen: ${addonsList}
 Adresse: ${booking.address}, ${booking.postalCode}
 ${booking.licensePlate ? `Kennzeichen: ${booking.licensePlate}` : ""}
 ${booking.carMake ? `Fahrzeugmarke: ${booking.carMake}` : ""}
@@ -137,7 +138,7 @@ export async function sendBookingConfirmationEmail(
     `ENEX Fahrzeugpflege Service\n\n` +
       `Buchungsnummer: ${booking.reference}\n` +
       `Paket: ${booking.plan} - ${booking.carType}\n` +
-      `Add-ons: ${addonsListForCalendar}\n` +
+      `Zusatzoptionen: ${addonsListForCalendar}\n` +
       `${booking.licensePlate ? `Kennzeichen: ${booking.licensePlate}\n` : ""}` +
       `${booking.carMake ? `Fahrzeugmarke: ${booking.carMake}\n` : ""}` +
       `${booking.parkingNotes ? `Parkhinweise: ${booking.parkingNotes}\n` : ""}\n` +
@@ -156,12 +157,16 @@ export async function sendBookingConfirmationEmail(
   // Yahoo Calendar link
   const yahooCalendarUrl = `https://calendar.yahoo.com/?v=60&view=d&type=20&title=${eventTitle}&st=${startDate}&dur=${encodeURIComponent("0400")}&desc=${eventDescription}&in_loc=${eventLocation}`;
 
-  // Apple Calendar (webcal) - uses webcal:// protocol to subscribe to calendar
   const baseUrl = (process.env.NEXTAUTH_URL || "http://localhost:3000").replace(
     /^https?:\/\//,
     ""
   );
-  const appleCalendarUrl = `webcal://${baseUrl}/api/calendar/${booking.reference}.ics`;
+  let appleCalendarUrl: string;
+  try {
+    appleCalendarUrl = buildWebcalCalendarUrl(baseUrl, booking.reference);
+  } catch {
+    appleCalendarUrl = `https://${baseUrl}/booking/confirmation?reference=${encodeURIComponent(booking.reference)}`;
+  }
 
   // Generate ICS calendar file (still attached as fallback)
   const icsContent = generateICSFile(booking);
@@ -209,7 +214,7 @@ export async function sendBookingConfirmationEmail(
                                   addons.length > 0
                                     ? `
                                 <tr>
-                                    <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Add-ons:</td>
+                                    <td style="padding: 8px 0; font-weight: bold; vertical-align: top;">Zusatzoptionen:</td>
                                     <td style="padding: 8px 0;">${addonsList}</td>
                                 </tr>
                                 `

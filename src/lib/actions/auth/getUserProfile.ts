@@ -4,7 +4,6 @@ import { db } from "@/lib/db/client";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
-import { sql } from "drizzle-orm";
 
 export async function getUserProfile(): Promise<{
   success: boolean;
@@ -27,20 +26,6 @@ export async function getUserProfile(): Promise<{
     }
 
     const userId = parseInt(session.user.id);
-
-    // First, try to add the columns if they don't exist (one-time migration)
-    try {
-      await db.execute(
-        sql`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "phone" varchar(40)`
-      );
-      await db.execute(
-        sql`ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "deleted_at" timestamp`
-      );
-    } catch (migrationError) {
-      // Ignore migration errors (columns might already exist or we don't have permission)
-      // This is a best-effort migration
-      console.log("Migration check:", migrationError instanceof Error ? migrationError.message : "Unknown");
-    }
 
     const user = await db.query.users.findFirst({
       where: eq(users.id, userId),

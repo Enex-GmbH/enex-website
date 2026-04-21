@@ -1,221 +1,179 @@
-import { Card } from "@/components/ui/card";
+import Link from "next/link";
+import { Building2, Car, Check, Clock, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  CheckCircle2,
-  Clock,
-  Car,
-  Euro,
-  Sparkles,
-  Building2,
-  TruckIcon,
-} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { PLANS_MARKETING } from "@/lib/data/plans-marketing";
+
+/** Equal card height on large screens; long lists scroll inside. */
+const CARD_LG_HEIGHT = "lg:h-[min(88vh,52rem)]";
 
 const Plans = () => {
-  const plans = [
-    {
-      key: "basicPlan",
-      image: "/images/home/basic-plan.png",
-      featuresCount: 3,
-      isExclusive: false,
-    },
-    {
-      key: "premiumPlan",
-      image: "/images/home/premium-plan.png",
-      featuresCount: 4,
-      isExclusive: false,
-    },
-    {
-      key: "exclusivePlan",
-      image: "/images/home/exclusive-plan.png",
-      featuresCount: 4,
-      isExclusive: true,
-    },
-  ];
-
   return (
-    <section>
-      <div className="container mx-auto bg-accent rounded-4xl">
-        <div className="p-8 md:p-20 flex flex-col gap-5">
-          <div>
-            <h2 className="text-4xl font-bold">Ihr Auto. Unser Service.</h2>
-            <p className="text-lg text-gray-500">
-              Wir bringen die Fahrzeugpflege zu Ihnen – schnell, flexibel,
-              professionell.
+    <section className="bg-gray-50/80">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="flex flex-col gap-10 py-12 md:py-20">
+          <div className="max-w-3xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-900">
+              Pakete
+            </p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
+              Unsere Pakete – Für jedes Fahrzeug die passende Pflege
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-gray-600">
+              Jedes Fahrzeug hat unterschiedliche Anforderungen. Deshalb bieten
+              wir Ihnen drei klar strukturierte Pakete – von der gründlichen
+              Innenreinigung bis zur vollständigen Premium-Aufbereitung.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {plans.map((plan) => (
-              <div key={plan.key} className="flex flex-col gap-4 h-full">
-                {/* Card Image */}
-                <Card
-                  className="bg-cover bg-center h-80 relative overflow-hidden rounded-2xl flex-shrink-0"
-                  style={{
-                    backgroundImage: `url(${plan.image})`,
-                    backgroundSize: "cover",
-                  }}
-                />
 
-                {/* Plan Details */}
-                <div className="flex flex-col gap-3 p-4 bg-white rounded-xl shadow-sm flex-grow">
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">
-                      {plan.key === "basicPlan" && "Basis-Paket"}
-                      {plan.key === "premiumPlan" && "Premium-Paket"}
-                      {plan.key === "exclusivePlan" && "Exklusiv-Paket"}
-                    </h3>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {plan.key === "basicPlan" &&
-                        "Schnelle persönliche Wäsche für Einzelpersonen"}
-                      {plan.key === "premiumPlan" &&
-                        "Tiefenreinigung & Detailing für Einzelpersonen"}
-                      {plan.key === "exclusivePlan" &&
-                        "Für Unternehmen mit mehreren Fahrzeugen konzipiert"}
-                    </p>
-                  </div>
-
-                  {/* Features */}
-                  <div className="flex flex-col gap-2">
-                    {plan.key === "basicPlan" && (
-                      <>
-                        <div className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">
-                            Außenhandwäsche
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">
-                            Innenraumsaugen & Fenster
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">
-                            Reifen- & Felgenreinigung
-                          </span>
-                        </div>
-                      </>
-                    )}
-                    {plan.key === "premiumPlan" && (
-                      <>
-                        <div className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">
-                            Alles aus dem Basis-Paket
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">
-                            Wachs- & Polierfinish
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">
-                            Innenraum-Tiefenreinigung (Armaturenbrett, Konsole,
-                            Sitze)
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">
-                            Reifenglanz + Fensterversiegelung
-                          </span>
-                        </div>
-                      </>
-                    )}
-                    {plan.key === "exclusivePlan" && (
-                      <>
-                        <div className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">
-                            Professionelles Detailing für mehrere
-                            Firmenfahrzeuge
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">
-                            Flottenmanagement-Terminplanung
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">
-                            Prioritärer Support & flexible Zeitfenster
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-gray-700">
-                            Individuelle Preisgestaltung pro Fahrzeug / Paket
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Duration, For, Price, Ideal */}
-                  <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-gray-200">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-enex-primary" />
-                      <span className="text-sm text-gray-700">
-                        {plan.key === "basicPlan" && "Dauer: ~4 Stunden"}
-                        {plan.key === "premiumPlan" && "Dauer: ~4 Stunden"}
-                        {plan.key === "exclusivePlan" &&
-                          "Dauer: bis zu 8 Stunden oder Ganztagesservice"}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {plan.isExclusive ? (
-                        <TruckIcon className="h-4 w-4 text-enex-primary" />
-                      ) : (
-                        <Car className="h-4 w-4 text-enex-primary" />
-                      )}
-                      <span className="text-sm text-gray-700">
-                        {plan.key === "basicPlan" && "Für: 1 Privatauto"}
-                        {plan.key === "premiumPlan" && "Für: 1 Auto"}
-                        {plan.key === "exclusivePlan" &&
-                          "Für: Unternehmen & Organisationen"}
-                      </span>
-                    </div>
-
-                    {!plan.isExclusive && (
-                      <div className="flex items-center gap-2">
-                        <Euro className="h-4 w-4 text-enex-primary" />
-                        <span className="text-sm font-semibold text-gray-900">
-                          {plan.key === "basicPlan" && "Ab €60 (Kleinwagen)"}
-                          {plan.key === "premiumPlan" &&
-                            "Ab €90 (Mittelklassewagen)"}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-enex-primary" />
-                      <span className="text-sm text-gray-700">
-                        {plan.key === "basicPlan" &&
-                          "Ideal für: regelmäßige Wartungsreinigung"}
-                        {plan.key === "premiumPlan" &&
-                          "Ideal für: vierteljährliche Tiefenreinigung"}
-                        {plan.key === "exclusivePlan" &&
-                          "Ideal für: Fuhrparkmanagement & Firmenwagen"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* CTA for Exclusive Plan */}
-                  {plan.isExclusive && (
-                    <Button className="mt-3 w-full bg-enex-primary hover:bg-enex-hover text-white">
-                      <Building2 className="h-4 w-4 mr-2" />
-                      Corporate-Angebot anfordern
-                    </Button>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-6 lg:items-stretch">
+            {PLANS_MARKETING.map((plan) => (
+              <article
+                key={plan.key}
+                className={cn(
+                  "flex min-h-0 flex-col overflow-hidden rounded-2xl border bg-white shadow-sm",
+                  CARD_LG_HEIGHT,
+                  plan.featuredVisual
+                    ? "border-gray-900 shadow-md ring-1 ring-black/5"
+                    : "border-gray-200"
+                )}
+              >
+                <div
+                  className={cn(
+                    "relative flex h-32 shrink-0 items-center justify-center sm:h-36",
+                    "bg-gradient-to-b from-gray-100 to-gray-50/90"
                   )}
+                >
+                  {plan.popular && (
+                    <span className="absolute right-3 top-3 rounded-full bg-black px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+                      Beliebt
+                    </span>
+                  )}
+                  <Car
+                    className="h-12 w-12 text-gray-400 sm:h-14 sm:w-14"
+                    strokeWidth={1.25}
+                    aria-hidden
+                  />
                 </div>
-              </div>
+
+                <div className="flex min-h-0 flex-1 flex-col">
+                  <div
+                    className={cn(
+                      "min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-6 pb-4 pt-5 md:px-7 md:pt-6",
+                      "[scrollbar-width:thin] [scrollbar-color:rgb(209_213_219)_transparent]"
+                    )}
+                  >
+                    <header className="space-y-2">
+                      <h3 className="text-xl font-bold text-gray-900">
+                        {plan.title}
+                      </h3>
+                      <p className="text-sm leading-relaxed text-gray-600">
+                        {plan.subtitle}
+                      </p>
+                      {plan.callout && (
+                        <p className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm leading-relaxed text-gray-800">
+                          {plan.callout}
+                        </p>
+                      )}
+                    </header>
+
+                    <div className="mt-5 flex flex-col gap-5">
+                      {plan.sections.map((section) => (
+                        <div key={section.title} className="space-y-2.5">
+                          <p className="text-xs font-bold uppercase tracking-wide text-gray-900">
+                            {section.title}
+                          </p>
+                          <ul className="flex flex-col gap-2.5">
+                            {section.items.map((item) => (
+                              <li key={item} className="flex gap-3">
+                                <span
+                                  className={cn(
+                                    "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
+                                    plan.featuredVisual
+                                      ? "bg-black text-white"
+                                      : "bg-gray-200 text-gray-600"
+                                  )}
+                                >
+                                  <Check
+                                    className="h-3 w-3"
+                                    strokeWidth={3}
+                                    aria-hidden
+                                  />
+                                </span>
+                                <span className="text-sm leading-snug text-gray-700">
+                                  {item}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+
+                    {plan.closing && (
+                      <p className="mt-5 rounded-lg border border-gray-100 bg-gray-50 p-3 text-sm leading-relaxed text-gray-800">
+                        {plan.closing}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="shrink-0 space-y-3 border-t border-gray-200 bg-white px-6 py-5 md:px-7">
+                    <div className="space-y-2.5">
+                      <div className="flex items-start gap-2.5 text-sm text-gray-700">
+                        <Clock
+                          className="mt-0.5 h-4 w-4 shrink-0 text-gray-500"
+                          aria-hidden
+                        />
+                        <span>{plan.duration}</span>
+                      </div>
+                      <div className="flex items-start gap-2.5 text-sm text-gray-700">
+                        <Car
+                          className="mt-0.5 h-4 w-4 shrink-0 text-gray-500"
+                          aria-hidden
+                        />
+                        <span>{plan.forLabel}</span>
+                      </div>
+                      <div className="flex items-start gap-2.5 text-sm text-gray-700">
+                        <Sparkles
+                          className="mt-0.5 h-4 w-4 shrink-0 text-gray-500"
+                          aria-hidden
+                        />
+                        <span>{plan.idealShort}</span>
+                      </div>
+                      {plan.priceLine && (
+                        <p className="pt-1 text-base text-gray-900">
+                          {plan.priceLine
+                            .split(/(€\d+)/)
+                            .map((chunk, i) =>
+                              /^€\d+$/.test(chunk) ? (
+                                <span key={i} className="text-lg font-bold">
+                                  {chunk}
+                                </span>
+                              ) : (
+                                <span key={i}>{chunk}</span>
+                              )
+                            )}
+                        </p>
+                      )}
+                    </div>
+
+                    {plan.isExclusive && (
+                      <Button
+                        className="w-full rounded-xl bg-gray-100 font-medium text-gray-900 hover:bg-gray-200"
+                        asChild
+                      >
+                        <Link href="/booking/location">
+                          <Building2 className="mr-2 h-4 w-4" aria-hidden />
+                          Corporate-Angebot anfordern
+                          <span className="ml-1" aria-hidden>
+                            ›
+                          </span>
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </article>
             ))}
           </div>
         </div>

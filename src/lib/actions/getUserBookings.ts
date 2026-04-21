@@ -2,8 +2,9 @@
 
 import { db } from "../db/client";
 import { bookings } from "../db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { headers } from "next/headers";
+import { resolveFranchiseId } from "../franchise";
 
 /**
  * Get all bookings for a user by email
@@ -17,20 +18,17 @@ export async function getUserBookings(email: string): Promise<{
 }> {
   try {
     const headersList = await headers();
-    // const franchiseId = await getFranchiseIdFromHeaders(headersList);
-    const franchiseId = 1;
-
-    if (!franchiseId) {
-      return {
-        success: false,
-        message: "Franchise not found",
-      };
-    }
+    const franchiseId = await resolveFranchiseId(headersList);
 
     const userBookings = await db
       .select()
       .from(bookings)
-      .where(eq(bookings.customerEmail, email))
+      .where(
+        and(
+          eq(bookings.customerEmail, email),
+          eq(bookings.franchiseId, franchiseId)
+        )
+      )
       .orderBy(desc(bookings.createdAt));
 
     return {

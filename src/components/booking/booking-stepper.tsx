@@ -5,11 +5,11 @@ import { CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const steps = [
-  { number: 1, label: "Konum", path: "/booking/location" },
-  { number: 2, label: "Araç & Paket & Ekstralar", path: "/booking/package" },
-  { number: 3, label: "Tarih/Saat", path: "/booking/datetime" },
-  { number: 4, label: "Detaylar", path: "/booking/details" },
-  { number: 5, label: "Ödeme & Onaylar", path: "/booking/payment" },
+  { number: 1, label: "Standort", path: "/booking/location" },
+  { number: 2, label: "Fahrzeug & Paket", path: "/booking/package" },
+  { number: 3, label: "Datum & Uhrzeit", path: "/booking/datetime" },
+  { number: 4, label: "Angaben", path: "/booking/details" },
+  { number: 5, label: "Zahlung", path: "/booking/payment" },
 ];
 
 export default function BookingStepper() {

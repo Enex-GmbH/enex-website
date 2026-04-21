@@ -11,6 +11,10 @@ import { useSession } from "next-auth/react";
 import { getBookingByReference } from "@/lib/actions";
 import type { bookings } from "@/lib/db/schema";
 import type { AddOn } from "@/store/booking-store";
+import {
+  bookingStatusLabelDe,
+  carTypeLabelDe,
+} from "@/lib/ui-labels-de";
 
 type Booking = typeof bookings.$inferSelect;
 
@@ -26,7 +30,7 @@ function ConfirmationContent() {
   // Fetch booking details from database
   useEffect(() => {
     if (!bookingReferenceParam) {
-      setError("Rezervasyon referansı bulunamadı");
+      setError("Buchungsreferenz nicht gefunden");
       setLoading(false);
       return;
     }
@@ -38,14 +42,14 @@ function ConfirmationContent() {
           setBooking(result.booking);
           setError(null);
         } else {
-          setError(result.message || "Rezervasyon bulunamadı");
+          setError(result.message || "Buchung nicht gefunden");
           setBooking(null);
         }
         setLoading(false);
       })
       .catch((err) => {
         console.error("Error fetching booking:", err);
-        setError("Rezervasyon yüklenirken bir hata oluştu");
+        setError("Fehler beim Laden der Buchung");
         setLoading(false);
       });
   }, [bookingReferenceParam]);
@@ -106,20 +110,13 @@ END:VCALENDAR`;
     }
   };
 
-  // Calculate DKK price from EUR (assuming 7.5 ratio, adjust as needed)
-  const calculateDkkPrice = (eurPrice: number): number => {
-    // This is a simplified conversion - you might want to store DKK separately
-    // or get it from the franchise settings
-    return Math.round(eurPrice * 7.5);
-  };
-
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto">
         <Card className="p-8">
           <div className="flex flex-col items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-enex-primary mb-4" />
-            <p className="text-gray-600">Rezervasyon yükleniyor...</p>
+            <p className="text-gray-600">Buchung wird geladen…</p>
           </div>
         </Card>
       </div>
@@ -135,16 +132,16 @@ END:VCALENDAR`;
               <CheckCircle2 className="w-8 h-8 text-red-600" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Rezervasyon bulunamadı
+              Buchung nicht gefunden
             </h1>
             <p className="text-gray-600 mb-6">
-              {error || "Rezervasyon bulunamadı"}
+              {error || "Buchung nicht gefunden"}
             </p>
             <Button
               onClick={() => router.push("/")}
               className="bg-enex-primary hover:bg-enex-hover text-white"
             >
-              Ana Sayfaya Dön
+              Zur Startseite
             </Button>
           </div>
         </Card>
@@ -160,28 +157,30 @@ END:VCALENDAR`;
             <CheckCircle2 className="w-8 h-8 text-green-600" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Randevunuz onaylandı!
+            Ihre Buchung ist bestätigt!
           </h1>
           <p className="text-gray-600">
-            Rezervasyon numaranız:{" "}
+            Buchungsnummer:{" "}
             <span className="font-semibold">{booking.reference}</span>
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            Durum:{" "}
-            <span className="font-medium capitalize">{booking.status}</span>
+            Status:{" "}
+            <span className="font-medium">
+              {bookingStatusLabelDe(booking.status)}
+            </span>
           </p>
         </div>
 
         <div className="space-y-6 mb-8">
           <div className="bg-gray-50 p-6 rounded-lg">
             <h2 className="font-semibold text-lg mb-4">
-              Özet: Tarih/Saat, Adres, Paket, Toplam (KDV dahil)
+              Übersicht: Datum, Adresse, Paket, Gesamt (inkl. MwSt.)
             </h2>
 
             <div className="space-y-3 text-sm">
               {/* Date & Time */}
               <div className="flex justify-between">
-                <span className="text-gray-600">Tarih/Saat:</span>
+                <span className="text-gray-600">Datum & Uhrzeit:</span>
                 <span className="font-medium">
                   {formatBookingDate(booking.date)} - {booking.time}
                 </span>
@@ -189,7 +188,7 @@ END:VCALENDAR`;
 
               {/* Address */}
               <div className="flex justify-between">
-                <span className="text-gray-600">Adres:</span>
+                <span className="text-gray-600">Adresse:</span>
                 <span className="font-medium text-right max-w-[60%]">
                   {booking.address}
                 </span>
@@ -204,13 +203,17 @@ END:VCALENDAR`;
               {/* Package */}
               <div className="flex justify-between">
                 <span className="text-gray-600">Paket:</span>
-                <span className="font-medium capitalize">{booking.plan}</span>
+                <span className="font-medium capitalize">
+                  {booking.plan}
+                </span>
               </div>
 
               {/* Car Type */}
               <div className="flex justify-between">
                 <span className="text-gray-600">Fahrzeugtyp:</span>
-                <span className="font-medium">{booking.carType}</span>
+                <span className="font-medium">
+                  {carTypeLabelDe(booking.carType)}
+                </span>
               </div>
 
               {/* Add-ons */}
@@ -218,7 +221,7 @@ END:VCALENDAR`;
                 Array.isArray(booking.addons) &&
                 booking.addons.length > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Add-ons:</span>
+                    <span className="text-gray-600">Zusatzoptionen:</span>
                     <span className="font-medium text-right max-w-[60%]">
                       {(booking.addons as AddOn[])
                         .map((a) => a.name)
@@ -230,7 +233,7 @@ END:VCALENDAR`;
               {/* Toll Fee */}
               {booking.tollFee && booking.tollFee > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Yol Ücreti:</span>
+                  <span className="text-gray-600">Anfahrtspauschale:</span>
                   <span className="font-medium">
                     {booking.isInsideZone ? "0€" : `${booking.tollFee}€`}
                   </span>
@@ -255,7 +258,7 @@ END:VCALENDAR`;
               {/* Coupon Code */}
               {booking.couponCode && (
                 <div className="flex justify-between text-green-600">
-                  <span>Kupon Kodu:</span>
+                  <span>Gutscheincode:</span>
                   <span className="font-medium">{booking.couponCode}</span>
                 </div>
               )}
@@ -263,16 +266,11 @@ END:VCALENDAR`;
               {/* Total Price */}
               <div className="pt-3 border-t border-gray-200">
                 <div className="flex justify-between text-lg font-bold">
-                  <span>TOPLAM ({booking.currency}):</span>
+                  <span>Gesamt ({booking.currency}):</span>
                   <span>
                     {booking.currency === "EUR" ? "€" : ""}
                     {booking.totalPrice}
                     {booking.currency === "EUR" ? "" : ` ${booking.currency}`}
-                    {booking.currency === "EUR" && (
-                      <span className="text-sm font-normal text-gray-500 ml-2">
-                        / {calculateDkkPrice(booking.totalPrice)}kr
-                      </span>
-                    )}
                   </span>
                 </div>
               </div>
@@ -324,7 +322,7 @@ END:VCALENDAR`;
             className="flex-1 flex items-center justify-center gap-2"
           >
             <Calendar className="w-4 h-4" />
-            Takvime ekle (.ics)
+            Zum Kalender hinzufügen (.ics)
           </Button>
 
           {session?.user && (
@@ -333,15 +331,15 @@ END:VCALENDAR`;
               variant="outline"
               className="flex-1"
             >
-              Rezervasyonu yönet
+              Buchung verwalten
             </Button>
           )}
         </div>
 
         <div className="mt-6 p-4 bg-blue-50 rounded-lg">
           <p className="text-sm text-gray-700">
-            <strong>Hazırlık:</strong> park alanı, priz, değerli eşyalarınızı
-            alınız.
+            <strong>Vorbereitung:</strong> Stellplatz freihalten, Strom prüfen,
+            Wertgegenstände aus dem Fahrzeug nehmen.
           </p>
         </div>
 
@@ -366,7 +364,7 @@ export default function ConfirmationPage() {
           <Card className="p-8">
             <div className="flex flex-col items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-enex-primary mb-4" />
-              <p className="text-gray-600">Rezervasyon yükleniyor...</p>
+              <p className="text-gray-600">Buchung wird geladen…</p>
             </div>
           </Card>
         </div>

@@ -37,17 +37,14 @@ export function Navigation() {
     return "ME";
   };
 
-  const navItems = [
-    { href: "/pricing", label: "Preise" },
-    { href: "/coverage", label: "Deckung" },
-    { href: "/corporate", label: "Corporate" },
-  ];
+  // Preise, Deckung, Firmenkunden: vorerst deaktiviert
+  const navItems: { href: string; label: string }[] = [];
 
   return (
     <>
       <div className="flex items-center justify-between">
         <Link href="/" className="flex items-center">
-          <Image src="/images/logo.png" alt="logo" width={100} height={47} />
+          <Image src="/images/logo.png" alt="Enex Logo" width={100} height={47} />
         </Link>
 
         {/* Middle: Nav items (desktop only) */}
@@ -115,7 +112,7 @@ export function Navigation() {
                       onClick={() => setAvatarDropdownOpen(false)}
                     >
                       <Shield className="h-4 w-4" />
-                      <span>Admin Dashboard</span>
+                      <span>Verwaltung</span>
                     </Link>
                   )}
                   <button
@@ -212,7 +209,7 @@ export function Navigation() {
                     className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
                     onClick={() => setOpen(false)}
                   >
-                    Admin Dashboard
+                    Verwaltung
                   </Link>
                 )}
               </>

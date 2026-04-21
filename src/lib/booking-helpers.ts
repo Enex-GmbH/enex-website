@@ -8,6 +8,8 @@ import type {
   AddOn,
 } from "@/store/booking-store";
 import { format } from "date-fns";
+import { randomBytes } from "crypto";
+import { sumBookingTotal } from "@/lib/pricing";
 
 /**
  * Convert zone string to boolean for database storage
@@ -95,8 +97,15 @@ export function transformBookingStoreToDb(
     throw new Error("All booking steps must be completed");
   }
 
-  // Calculate total price (using EUR as primary currency for now)
-  let totalPrice = calculateTotalPrice(location, pkg, currency);
+  // Calculate total price (EUR)
+  let totalPrice = sumBookingTotal(
+    { tollFeeEur: location.tollFeeEur },
+    {
+      selectedPlan: pkg.selectedPlan,
+      carType: pkg.carType,
+      addOns: pkg.addOns,
+    }
+  );
 
   // Apply discount if provided (discountedPrice is in cents, convert to euros)
   if (discountedPrice !== undefined && currency === "EUR") {
@@ -110,7 +119,7 @@ export function transformBookingStoreToDb(
     postalCode: location.postalCode,
     address: location.address,
     isInsideZone: zoneToBoolean(location.zone),
-    tollFee: currency === "EUR" ? location.tollFeeEur : location.tollFeeDkr,
+    tollFee: location.tollFeeEur,
     waterAvailable: location.hasWater,
     electricityAvailable: location.hasElectricity,
     // Package data
@@ -142,48 +151,11 @@ export function transformBookingStoreToDb(
 }
 
 /**
- * Calculate total price based on currency
- * @param location - Location data with toll fees
- * @param pkg - Package data with plan and addons
- * @param currency - Currency code (EUR or DKK)
- * @returns Total price in the specified currency
- */
-function calculateTotalPrice(
-  location: LocationData,
-  pkg: PackageData,
-  currency: string
-): number {
-  let total = 0;
-
-  // Add toll fee
-  total += currency === "EUR" ? location.tollFeeEur : location.tollFeeDkr;
-
-  // Add plan base price
-  const planPrices = {
-    basic: { eur: 60, dkr: 450 },
-    premium: { eur: 90, dkr: 675 },
-    exclusive: { eur: 150, dkr: 1125 },
-  };
-
-  total +=
-    currency === "EUR"
-      ? planPrices[pkg.selectedPlan].eur
-      : planPrices[pkg.selectedPlan].dkr;
-
-  // Add add-ons
-  pkg.addOns.forEach((addOn) => {
-    total += currency === "EUR" ? addOn.priceEur : addOn.priceDkr;
-  });
-
-  return total;
-}
-
-/**
  * Generate a unique booking reference
- * Format: ENX-{random uppercase alphanumeric}
+ * Format: ENX-{cryptographic random hex}
  * @returns Booking reference string
  */
 export function generateBookingReference(): string {
-  const randomPart = Math.random().toString(36).substring(2, 9).toUpperCase();
+  const randomPart = randomBytes(9).toString("hex").slice(0, 14).toUpperCase();
   return `ENX-${randomPart}`;
 }

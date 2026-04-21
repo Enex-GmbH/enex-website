@@ -5,6 +5,7 @@ import { bookings, timeSlots, payments, bookingEvents } from "../../db/schema";
 import { eq, and } from "drizzle-orm";
 import { headers } from "next/headers";
 import { requireAdmin } from "../../auth/authorization";
+import { resolveFranchiseId } from "../../franchise";
 
 /**
  * Delete a booking (admin only)
@@ -21,15 +22,7 @@ export async function deleteBooking(bookingId: number): Promise<{
     await requireAdmin();
 
     const headersList = await headers();
-    // const franchiseId = await getFranchiseIdFromHeaders(headersList);
-    const franchiseId = 1;
-
-    if (!franchiseId) {
-      return {
-        success: false,
-        message: "Franchise not found",
-      };
-    }
+    const franchiseId = await resolveFranchiseId(headersList);
 
     // Get booking to verify it exists
     const [booking] = await db

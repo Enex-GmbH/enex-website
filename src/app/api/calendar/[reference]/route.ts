@@ -4,6 +4,8 @@ import { bookings } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { format, parse } from "date-fns";
 import type { AddOn } from "@/store/booking-store";
+import { resolveFranchiseId } from "@/lib/franchise";
+import { verifyCalendarIcsQuery } from "@/lib/calendar-ics-token";
 
 type Booking = typeof bookings.$inferSelect;
 
@@ -39,7 +41,7 @@ function generateICSFile(booking: Booking): string {
   const description = `ENEX Fahrzeugpflege Service
 Buchungsnummer: ${booking.reference}
 Paket: ${booking.plan} - ${booking.carType}
-Add-ons: ${addonsList}
+Zusatzoptionen: ${addonsList}
 Adresse: ${booking.address}, ${booking.postalCode}
 ${booking.licensePlate ? `Kennzeichen: ${booking.licensePlate}` : ""}
 ${booking.carMake ? `Fahrzeugmarke: ${booking.carMake}` : ""}
@@ -86,8 +88,15 @@ export async function GET(
 ) {
   try {
     const { reference: ref } = await params;
-    const reference = ref.replace(".ics", "");
-    const franchiseId = 1; // TODO: Get from headers if needed
+    const reference = decodeURIComponent(ref.replace(/\.ics$/i, ""));
+    const exp = request.nextUrl.searchParams.get("exp");
+    const sig = request.nextUrl.searchParams.get("sig");
+
+    if (!verifyCalendarIcsQuery(reference, exp, sig)) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const franchiseId = await resolveFranchiseId(request.headers);
 
     const [booking] = await db
       .select()

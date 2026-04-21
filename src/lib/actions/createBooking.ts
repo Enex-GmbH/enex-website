@@ -3,7 +3,7 @@
 import { db } from "../db/client";
 import { bookings, timeSlots, bookingEvents } from "../db/schema";
 import { eq, and } from "drizzle-orm";
-import { getFranchiseIdFromHeaders } from "../franchise";
+import { resolveFranchiseId } from "../franchise";
 import { headers } from "next/headers";
 import {
   transformBookingStoreToDb,
@@ -38,18 +38,8 @@ export async function createBooking(
   message?: string;
 }> {
   try {
-    // Get franchise ID from headers
     const headersList = await headers();
-    // const franchiseId = await getFranchiseIdFromHeaders(headersList);
-    const franchiseId = 1;
-
-    if (!franchiseId) {
-      return {
-        success: false,
-        message:
-          "Franchise not found. Please access the site via a franchise subdomain.",
-      };
-    }
+    const franchiseId = await resolveFranchiseId(headersList);
 
     // Validate all required data is present
     if (

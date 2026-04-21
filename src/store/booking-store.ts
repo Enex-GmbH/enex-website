@@ -1,14 +1,35 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { getBookingTotals } from "@/lib/pricing";
 
-export type CarType = "Sedan" | "SUV" | "Hatchback" | "Coupe";
+/** Fahrzeugklasse laut Preisliste (PDF): Kleinwagen, Standardwagen, SUV. */
+export type CarType = "kleinwagen" | "standardwagen" | "suv";
+
+const CAR_TYPE_VALUES: CarType[] = ["kleinwagen", "standardwagen", "suv"];
+
+/**
+ * Maps persisted values (inkl. alter englischer Typen) auf die drei PDF-Klassen.
+ */
+export function normalizeCarType(raw: string | undefined | null): CarType {
+  if (!raw) return "standardwagen";
+  const key = String(raw).trim();
+  if ((CAR_TYPE_VALUES as readonly string[]).includes(key)) {
+    return key as CarType;
+  }
+  const legacy: Record<string, CarType> = {
+    Hatchback: "kleinwagen",
+    Sedan: "standardwagen",
+    Coupe: "standardwagen",
+    SUV: "suv",
+  };
+  return legacy[key] ?? "standardwagen";
+}
 export type PlanType = "basic" | "premium" | "exclusive";
 
 export interface AddOn {
   id: string;
   name: string;
   priceEur: number;
-  priceDkr: number;
   durationMinutes: number;
 }
 
@@ -17,7 +38,6 @@ export interface LocationData {
   address: string;
   zone: "inside" | "outside";
   tollFeeEur: number;
-  tollFeeDkr: number;
   hasWater: boolean;
   hasElectricity: boolean;
 }
@@ -67,7 +87,7 @@ interface BookingState {
 
   // Utility
   resetBooking: () => void;
-  getTotalPrice: () => { eur: number; dkr: number };
+  getTotalPrice: () => { eur: number };
   isStepComplete: (step: number) => boolean;
 }
 
@@ -98,37 +118,7 @@ export const useBookingStore = create<BookingState>()(
 
       getTotalPrice: () => {
         const state = get();
-        let totalEur = 0;
-        let totalDkr = 0;
-
-        // Add toll fee
-        if (state.location) {
-          totalEur += state.location.tollFeeEur;
-          totalDkr += state.location.tollFeeDkr;
-        }
-
-        // Add plan base price (would be calculated based on plan and car type)
-        if (state.package) {
-          const { selectedPlan, carType } = state.package;
-
-          // Base prices per plan (simplified)
-          const planPrices = {
-            basic: { eur: 60, dkr: 450 },
-            premium: { eur: 90, dkr: 675 },
-            exclusive: { eur: 150, dkr: 1125 },
-          };
-
-          totalEur += planPrices[selectedPlan].eur;
-          totalDkr += planPrices[selectedPlan].dkr;
-
-          // Add add-ons
-          state.package.addOns.forEach((addOn) => {
-            totalEur += addOn.priceEur;
-            totalDkr += addOn.priceDkr;
-          });
-        }
-
-        return { eur: totalEur, dkr: totalDkr };
+        return getBookingTotals(state.location, state.package);
       },
 
       isStepComplete: (step: number) => {
@@ -155,9 +145,21 @@ export const useBookingStore = create<BookingState>()(
         location: state.location,
         package: state.package,
         dateTime: state.dateTime,
-        contactDetails: state.contactDetails,
-        payment: state.payment,
+        // Omit contactDetails and payment from localStorage (PII / agreements)
       }),
+      merge: (persistedState, currentState) => {
+        const merged = {
+          ...currentState,
+          ...(persistedState as object),
+        };
+        if (merged.package?.carType != null) {
+          merged.package = {
+            ...merged.package,
+            carType: normalizeCarType(String(merged.package.carType)),
+          };
+        }
+        return merged;
+      },
     }
   )
 );

@@ -92,3 +92,23 @@ export async function getFranchiseIdFromHeaders(
 export function getFranchiseSlugFromHostname(hostname: string): string | null {
   return extractSubdomain(hostname);
 }
+
+/**
+ * Resolves franchise from Host header, then DEFAULT_FRANCHISE_ID, then 1.
+ */
+export async function resolveFranchiseId(
+  headersList: Headers
+): Promise<number> {
+  const fromHost = await getFranchiseIdFromHeaders(headersList);
+  if (fromHost !== null) {
+    return fromHost;
+  }
+  const raw = process.env.DEFAULT_FRANCHISE_ID;
+  if (raw !== undefined && raw !== "") {
+    const n = parseInt(raw, 10);
+    if (Number.isFinite(n)) {
+      return n;
+    }
+  }
+  return 1;
+}

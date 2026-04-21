@@ -10,15 +10,21 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Input } from "../ui/input";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { PostalCodeSelect } from "../ui/postal-code-select";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { CalendarDays, CarFront, MapPin, Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Calendar } from "../ui/calendar";
 import { format, startOfMonth, endOfMonth, addMonths } from "date-fns";
 import { de } from "date-fns/locale";
 import { useRouter } from "next/navigation";
-import { useBookingStore, CarType } from "@/store/booking-store";
+import {
+  useBookingStore,
+  CarType,
+  normalizeCarType,
+} from "@/store/booking-store";
 import { getFullyBookedDates } from "@/lib/actions/getFullyBookedDates";
+import { motion } from "motion/react";
 
 const HeroBlob = () => {
   return (
@@ -54,7 +60,9 @@ function Hero() {
   };
 
   const [postalCode, setPostalCode] = useState(location?.postalCode || "");
-  const [carType, setCarType] = useState(pkg?.carType || "");
+  const [carType, setCarType] = useState<CarType>(() =>
+    normalizeCarType(pkg?.carType)
+  );
   const [date, setDate] = useState<Date | undefined>(getInitialDate());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [fullyBookedDates, setFullyBookedDates] = useState<string[]>([]);
@@ -75,6 +83,28 @@ function Hero() {
       }
     }
   }, [dateTime?.date]);
+
+  useEffect(() => {
+    if (pkg?.carType == null) return;
+    const next = normalizeCarType(pkg.carType);
+    setCarType((prev) => (prev === next ? prev : next));
+  }, [pkg?.carType]);
+
+  /** Nach Session-Reset (z. B. Startseite) lokalen Hero-State leeren, sonst bleiben PLZ/Datum/Car sichtbar. */
+  const prevHadBookingSlice = useRef<boolean | null>(null);
+  useEffect(() => {
+    const hasSlice = !!(location || pkg || dateTime);
+    if (prevHadBookingSlice.current === null) {
+      prevHadBookingSlice.current = hasSlice;
+      return;
+    }
+    if (!hasSlice && prevHadBookingSlice.current) {
+      setPostalCode("");
+      setCarType(normalizeCarType(undefined));
+      setDate(undefined);
+    }
+    prevHadBookingSlice.current = hasSlice;
+  }, [location, pkg, dateTime]);
 
   // Fetch fully booked dates on component mount
   useEffect(() => {
@@ -139,9 +169,12 @@ function Hero() {
     // Pre-fill postal code in location store if provided
     // (Car type and date are already saved immediately when selected)
     if (postalCode && postalCode.length >= 5) {
-      // Determine zone based on postal code (simplified logic)
-      const code = parseInt(postalCode);
-      const zone = code >= 10000 && code <= 14999 ? "inside" : "outside";
+      // Determine zone based on postal code
+      // Pforzheim and Karlsruhe postal codes are inside the service zone
+      const pforzheimCodes = ["75172", "75173", "75175", "75177", "75179", "75180", "75181", "75217", "75223", "75210", "75196"];
+      const karlsruheCodes = ["76131", "76133", "76135", "76137", "76139", "76149", "76185", "76187", "76189", "76227", "76228", "76327", "76307"];
+
+      const zone = (pforzheimCodes.includes(postalCode) || karlsruheCodes.includes(postalCode)) ? "inside" : "outside";
       const tollFeeEur = zone === "outside" ? 9 : 0;
 
       setLocation({
@@ -149,15 +182,27 @@ function Hero() {
         address: "", // Will be filled in location step
         zone: zone,
         tollFeeEur: tollFeeEur,
-        tollFeeDkr: 0,
         hasWater: location?.hasWater || false,
         hasElectricity: location?.hasElectricity || false,
       });
     }
 
+    setPackage({
+      carType,
+      selectedPlan: pkg?.selectedPlan ?? "basic",
+      addOns: pkg?.addOns ?? [],
+    });
+
     // Navigate to booking flow
     router.push("/booking/location");
   };
+
+  const headingText = "Sauber. Smart. Mühelos.";
+  const headingWords = headingText.split(" ");
+
+  const descriptionText =
+    "Erlebe die nächste Generation der Autopflege – überall, wo du bist.";
+  const descriptionWords = descriptionText.split(" ");
 
   return (
     <section>
@@ -165,26 +210,63 @@ function Hero() {
         <HeroBlob />
         <div className="container mx-auto flex flex-col lg:flex-row justify-center gap-15">
           <div className="pt-24">
-            <h1 className="font-semibold leading-[1.1] text-balance text-[clamp(2rem,5vw+1rem,3.5rem)] tracking-tight">
-              Sauber. Smart. Mühelos.
+            <h1 className="flex flex-wrap gap-x-[0.35em] font-semibold leading-[1.1] text-balance text-[clamp(2rem,5vw+1rem,3.5rem)] tracking-tight">
+              {headingWords.map((word: string, index: number) => (
+                <motion.span
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: index * 0.1,
+                    ease: "easeOut",
+                  }}
+                  className="inline-block"
+                >
+                  {word}
+                </motion.span>
+              ))}
             </h1>
-            <p className="mt-4 text-balance text-[clamp(1rem,2vw+0.25rem,1.25rem)] text-gray-600">
-              Erlebe die nächste Generation der Autopflege – überall, wo du
-              bist.
+            <p className="mt-4 flex flex-wrap gap-x-[0.35em] text-balance text-[clamp(1rem,2vw+0.25rem,1.25rem)] text-gray-600">
+              {descriptionWords.map((word: string, index: number) => (
+                <motion.span
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: headingWords.length * 0.1 + index * 0.05 + 0.2,
+                    ease: "easeOut",
+                  }}
+                  className="inline-block"
+                >
+                  {word}
+                </motion.span>
+              ))}
             </p>
 
             {/* SEARCH AREA */}
-            <div className="mt-8 flex flex-col gap-3 rounded-md border border-border bg-background/60 p-4 backdrop-blur-lg shadow-sm">
-              {/* Location - PLZ Input */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.6,
+                delay:
+                  headingWords.length * 0.1 +
+                  descriptionWords.length * 0.05 +
+                  0.4,
+                ease: "easeOut",
+              }}
+              className="mt-8 flex flex-col gap-3 rounded-md border border-border bg-background/60 p-4 backdrop-blur-lg shadow-sm"
+            >
+              {/* Location - PLZ Select */}
               <div className="flex items-center gap-2 w-full">
-                <MapPin className="h-6 w-6 text-enex-primary" />
-                <Input
-                  type="text"
-                  placeholder="PLZ (z.B. 10115)"
+                <MapPin className="h-6 w-6 text-enex-primary shrink-0" />
+                <PostalCodeSelect
                   value={postalCode}
-                  onChange={(e) => setPostalCode(e.target.value)}
-                  className="w-full !h-12"
-                  maxLength={5}
+                  onValueChange={(value) => setPostalCode(value)}
+                  placeholder="PLZ auswählen"
+                  className="w-full"
                 />
               </div>
 
@@ -194,23 +276,23 @@ function Hero() {
                 <Select
                   value={carType}
                   onValueChange={(value) => {
-                    setCarType(value);
-                    // Immediately save to store when car type is selected
+                    const v = value as CarType;
+                    setCarType(v);
+                    // Immediately save to store when car class is selected
                     setPackage({
-                      carType: value as CarType,
+                      carType: v,
                       selectedPlan: pkg?.selectedPlan || "basic", // Keep existing plan or default
                       addOns: pkg?.addOns || [],
                     });
                   }}
                 >
                   <SelectTrigger className="w-full !h-12 !bg-white !text-gray-900">
-                    <SelectValue placeholder="Fahrzeugtyp" />
+                    <SelectValue placeholder="Fahrzeugklasse" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Sedan">Sedan</SelectItem>
-                    <SelectItem value="SUV">SUV</SelectItem>
-                    <SelectItem value="Hatchback">Hatchback</SelectItem>
-                    <SelectItem value="Coupe">Coupe</SelectItem>
+                    <SelectItem value="kleinwagen">Kleinwagen</SelectItem>
+                    <SelectItem value="standardwagen">Standardwagen</SelectItem>
+                    <SelectItem value="suv">SUV</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -233,7 +315,7 @@ function Hero() {
                   >
                     {isLoadingBookedDates && fullyBookedDates.length === 0 ? (
                       <div className="p-4 text-center text-sm text-gray-500 min-w-[300px]">
-                        Yükleniyor...
+                        Wird geladen…
                       </div>
                     ) : (
                       <Calendar
@@ -271,19 +353,30 @@ function Hero() {
                 <Search className="w-4 h-4" />
                 Suchen
               </Button>
-            </div>
+            </motion.div>
             {/* SEARCH AREA */}
           </div>
-          <div>
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{
+              duration: 0.8,
+              delay:
+                headingWords.length * 0.1 +
+                descriptionWords.length * 0.05 +
+                0.3,
+              ease: "easeOut",
+            }}
+          >
             <Image
               src="/images/home/hero.png"
-              alt="hero"
+              alt="Professionelle Fahrzeugpflege"
               width={1334}
               height={1370}
               className="h-auto lg:max-w-[600px] w-full"
               priority
             />
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

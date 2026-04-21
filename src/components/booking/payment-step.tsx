@@ -30,7 +30,6 @@ export default function PaymentStep() {
   const [discount, setDiscount] = useState(0);
   const [discountedPrice, setDiscountedPrice] = useState<{
     eur: number;
-    dkr: number;
   } | null>(null);
   const {
     location,
@@ -91,7 +90,7 @@ export default function PaymentStep() {
       );
 
       if (!bookingResult.success || !bookingResult.bookingId) {
-        alert(bookingResult.message || "Rezervasyon oluşturulamadı");
+        alert(bookingResult.message || "Buchung konnte nicht erstellt werden");
         setIsSubmitting(false);
         return;
       }
@@ -102,23 +101,20 @@ export default function PaymentStep() {
         amountInCents,
         "eur",
         bookingResult.reference!,
-        contactDetails!.email
+        contactDetails!.email,
+        bookingResult.bookingId
       );
 
-      if (!paymentIntentResult.success || !paymentIntentResult.clientSecret) {
-        alert(paymentIntentResult.message || "Ödeme işlemi başlatılamadı");
+      if (!paymentIntentResult.success || !paymentIntentResult.paymentIntentId) {
+        alert(
+          paymentIntentResult.message || "Zahlung konnte nicht gestartet werden"
+        );
         setIsSubmitting(false);
         return;
       }
 
-      // TODO: Step 3: Integrate Stripe Elements here
-      // For now, we'll simulate payment success
-      // In production, you would:
-      // 1. Use Stripe Elements to collect card details
-      // 2. Confirm the payment intent with Stripe
-      // 3. Wait for payment confirmation
-
-      // Simulate payment confirmation (remove this when Stripe is integrated)
+      // Phase 2: Stripe Elements + real PI confirmation (see phase2-stripe-notes.ts)
+      // Phase 1: short delay only — no card processing
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Step 4: Confirm booking after payment succeeds
@@ -129,7 +125,7 @@ export default function PaymentStep() {
       );
 
       if (!confirmResult.success) {
-        alert(confirmResult.message || "Rezervasyon onaylanamadı");
+        alert(confirmResult.message || "Buchung konnte nicht bestätigt werden");
         setIsSubmitting(false);
         return;
       }
@@ -139,7 +135,7 @@ export default function PaymentStep() {
       router.push(`/booking/confirmation?reference=${bookingResult.reference}`);
     } catch (error) {
       console.error("Error processing booking:", error);
-      alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+      alert("Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.");
       setIsSubmitting(false);
     }
   };
@@ -147,7 +143,7 @@ export default function PaymentStep() {
   const handleApplyCoupon = async () => {
     const couponCode = couponCodeValue || payment?.couponCode;
     if (!couponCode || !couponCode.trim()) {
-      alert("Lütfen bir kupon kodu girin");
+      alert("Bitte geben Sie einen Gutscheincode ein");
       return;
     }
 
@@ -160,13 +156,7 @@ export default function PaymentStep() {
         setDiscount(result.discount);
         // Convert discounted price back from cents to euros
         const discountedEur = result.discountedPrice / 100;
-        // Calculate DKK equivalent (assuming same ratio)
-        const ratio = totalPrice.dkr / totalPrice.eur;
-        const newDiscountedPrice = {
-          eur: discountedEur,
-          dkr: Math.round(discountedEur * ratio),
-        };
-        setDiscountedPrice(newDiscountedPrice);
+        setDiscountedPrice({ eur: discountedEur });
         // Update payment data with coupon code
         if (payment) {
           setPayment({
@@ -175,14 +165,14 @@ export default function PaymentStep() {
           });
         }
       } else {
-        alert(result.message || "Kupon kodu geçersiz");
+        alert(result.message || "Gutscheincode ungültig");
         setCouponApplied(false);
         setDiscount(0);
         setDiscountedPrice(null);
       }
     } catch (error) {
       console.error("Error applying coupon:", error);
-      alert("Kupon kodu uygulanırken bir hata oluştu");
+      alert("Der Gutscheincode konnte nicht angewendet werden");
     } finally {
       setApplyingCoupon(false);
     }
@@ -191,18 +181,18 @@ export default function PaymentStep() {
   return (
     <Card className="p-6">
       <h1 className="text-2xl font-bold mb-6">
-        Rezervasyon 5/5 - Ödeme & Onaylar
+        Buchung 5/5 – Zahlung & Bestätigung
       </h1>
 
       {/* Order Summary */}
       <div className="mb-6 bg-gray-50 p-4 rounded-lg">
         <h2 className="font-semibold mb-3">
-          Özet: Tarih/Saat, Adres, Paket, Toplam (KDV dahil)
+          Übersicht: Datum, Adresse, Paket, Gesamt (inkl. MwSt.)
         </h2>
         <div className="space-y-2 text-sm">
           {dateTime && (
             <div className="flex justify-between">
-              <span className="text-gray-600">Tarih/Saat:</span>
+              <span className="text-gray-600">Datum & Uhrzeit:</span>
               <span className="font-medium">
                 {format(dateTime.date, "PPP", { locale: de })} -{" "}
                 {dateTime.timeSlot}
@@ -212,7 +202,7 @@ export default function PaymentStep() {
 
           {location && (
             <div className="flex justify-between">
-              <span className="text-gray-600">Adres:</span>
+              <span className="text-gray-600">Adresse:</span>
               <span className="font-medium">{location.address}</span>
             </div>
           )}
@@ -228,7 +218,7 @@ export default function PaymentStep() {
 
               {pkg.addOns.length > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Add-ons:</span>
+                  <span className="text-gray-600">Zusatzoptionen:</span>
                   <span className="font-medium">
                     {pkg.addOns.map((a) => a.name).join(", ")}
                   </span>
@@ -239,16 +229,14 @@ export default function PaymentStep() {
 
           {couponApplied && discount > 0 && (
             <div className="flex justify-between text-sm text-green-600">
-              <span>İndirim:</span>
+              <span>Rabatt:</span>
               <span>-€{(discount / 100).toFixed(2)}</span>
             </div>
           )}
           <div className="pt-2 border-t border-gray-200">
             <div className="flex justify-between text-lg font-bold">
-              <span>TOPLAM (KDV dahil):</span>
-              <span>
-                €{finalPrice.eur} / {finalPrice.dkr}kr
-              </span>
+              <span>Gesamt (inkl. MwSt.):</span>
+              <span>€{finalPrice.eur}</span>
             </div>
           </div>
         </div>
@@ -259,10 +247,10 @@ export default function PaymentStep() {
         <div className="bg-white border rounded-lg p-4">
           <div className="flex items-center gap-2 mb-3">
             <CreditCard className="w-5 h-5 text-enex-primary" />
-            <h3 className="font-semibold">Kart Ödeme (3DS/SCA)</h3>
+            <h3 className="font-semibold">Kartenzahlung (3DS/SCA)</h3>
           </div>
           <p className="text-sm text-gray-600">
-            Ödeme 3D Secure ile güvenli şekilde işlenecektir
+            Die Zahlung wird sicher per 3D Secure abgewickelt
           </p>
         </div>
 
@@ -272,13 +260,13 @@ export default function PaymentStep() {
             htmlFor="couponCode"
             className="block text-sm font-medium mb-2"
           >
-            Kupon Kodu
+            Gutscheincode
           </label>
           <div className="flex gap-2">
             <Input
               id="couponCode"
               type="text"
-              placeholder="Kupon kodunuzu girin"
+              placeholder="Gutscheincode eingeben"
               {...register("couponCode")}
             />
             <Button
@@ -289,7 +277,7 @@ export default function PaymentStep() {
               className="flex-shrink-0"
             >
               <Tag className="w-4 h-4 mr-2" />
-              {applyingCoupon ? "Uygulanıyor..." : "Uygula"}
+              {applyingCoupon ? "Wird angewendet…" : "Anwenden"}
             </Button>
           </div>
         </div>
@@ -305,7 +293,7 @@ export default function PaymentStep() {
             />
             <label htmlFor="agreedToTerms" className="text-sm">
               <span className={errors.agreedToTerms ? "text-red-500" : ""}>
-                AGB & Datenschutz
+                Ich akzeptiere die AGB.
               </span>
             </label>
           </div>
@@ -324,7 +312,7 @@ export default function PaymentStep() {
             />
             <label htmlFor="agreedToPrivacy" className="text-sm">
               <span className={errors.agreedToPrivacy ? "text-red-500" : ""}>
-                İptal/erteleme politikasını onaylıyorum
+                Ich habe die Datenschutzerklärung zur Kenntnis genommen.
               </span>
             </label>
           </div>
@@ -343,7 +331,8 @@ export default function PaymentStep() {
             />
             <label htmlFor="agreedToService" className="text-sm">
               <span className={errors.agreedToService ? "text-red-500" : ""}>
-                Hizmetin 14 gün içinde başlamasına açık onay veriyorum
+                Ich stimme zu, dass die Leistung innerhalb von 14 Tagen beginnen
+                kann.
               </span>
             </label>
           </div>
@@ -363,14 +352,14 @@ export default function PaymentStep() {
             disabled={isSubmitting}
             className="flex-1"
           >
-            Geri
+            Zurück
           </Button>
           <Button
             type="submit"
             disabled={isSubmitting}
             className="flex-1 bg-enex-primary hover:bg-enex-hover text-white disabled:opacity-50"
           >
-            {isSubmitting ? "İşleniyor..." : "Ödemeyi tamamla"}
+            {isSubmitting ? "Wird verarbeitet…" : "Zahlung abschließen"}
           </Button>
         </div>
       </form>

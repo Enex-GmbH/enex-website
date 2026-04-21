@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { MapPin, Car, Calendar, Euro } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { carTypeLabelDe } from "@/lib/ui-labels-de";
 
 export default function BookingSummary() {
   const { location, package: pkg, dateTime, getTotalPrice } = useBookingStore();
@@ -12,7 +13,7 @@ export default function BookingSummary() {
 
   return (
     <Card className="p-6 sticky top-4">
-      <h2 className="text-xl font-bold mb-4">Özet</h2>
+      <h2 className="text-xl font-bold mb-4">Zusammenfassung</h2>
 
       <div className="space-y-4">
         {/* Package */}
@@ -27,7 +28,7 @@ export default function BookingSummary() {
         {/* Add-ons */}
         {pkg && pkg.addOns.length > 0 && (
           <div>
-            <div className="text-sm text-gray-600 mb-1">Add-on:</div>
+            <div className="text-sm text-gray-600 mb-1">Zusatzoptionen:</div>
             <ul className="space-y-1">
               {pkg.addOns.map((addOn) => (
                 <li key={addOn.id} className="text-sm font-medium">
@@ -41,11 +42,11 @@ export default function BookingSummary() {
         {/* Toll Fee */}
         {location && (
           <div>
-            <div className="text-sm text-gray-600 mb-1">Yol Ücreti:</div>
+            <div className="text-sm text-gray-600 mb-1">Anfahrtspauschale:</div>
             <p className="font-medium">
               {location.zone === "inside"
                 ? "0€"
-                : `${location.tollFeeEur}€ / ${location.tollFeeDkr}kr`}
+                : `${location.tollFeeEur}€`}
             </p>
           </div>
         )}
@@ -53,8 +54,8 @@ export default function BookingSummary() {
         {/* Vehicle Type */}
         {pkg && (
           <div>
-            <div className="text-sm text-gray-600 mb-1">Araç:</div>
-            <p className="font-medium">{pkg.carType}</p>
+            <div className="text-sm text-gray-600 mb-1">Fahrzeug:</div>
+            <p className="font-medium">{carTypeLabelDe(pkg.carType)}</p>
           </div>
         )}
 
@@ -63,7 +64,7 @@ export default function BookingSummary() {
           <div>
             <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
               <MapPin className="w-4 h-4" />
-              <span>Adres:</span>
+              <span>Adresse:</span>
             </div>
             <p className="font-medium text-sm">{location.address}</p>
           </div>
@@ -74,7 +75,7 @@ export default function BookingSummary() {
           <div>
             <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
               <Calendar className="w-4 h-4" />
-              <span>Tarih/Saat:</span>
+              <span>Datum & Uhrzeit:</span>
             </div>
             <p className="font-medium text-sm">
               {format(dateTime.date, "PPP", { locale: de })}
@@ -89,10 +90,10 @@ export default function BookingSummary() {
           <div className="pt-4 border-t border-gray-200">
             <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
               <Euro className="w-4 h-4" />
-              <span>TOPLAM (KDV dahil):</span>
+              <span>Gesamt (inkl. MwSt.):</span>
             </div>
             <p className="text-xl font-bold text-enex-primary">
-              €{totalPrice.eur} / {totalPrice.dkr}kr
+              €{totalPrice.eur}
             </p>
           </div>
         )}
@@ -100,7 +101,7 @@ export default function BookingSummary() {
 
       {!pkg && !location && !dateTime && (
         <p className="text-sm text-gray-500 text-center py-4">
-          Lütfen rezervasyonunuzu tamamlamak için formu doldurun
+          Bitte füllen Sie das Formular aus, um Ihre Buchung abzuschließen.
         </p>
       )}
     </Card>

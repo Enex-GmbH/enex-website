@@ -17,6 +17,23 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  if (pathname.startsWith("/profile") && !token) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  if (pathname.startsWith("/admin")) {
+    if (!token) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    if (token.role !== "admin") {
+      return NextResponse.redirect(new URL("/account", request.url));
+    }
+  }
+
   // Redirect authenticated users away from auth pages
   if (token) {
     if (pathname === "/login" || pathname === "/register") {

@@ -1,8 +1,12 @@
 import { db } from "@/lib/db/client";
 import { sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { assertMigrationAllowed } from "@/lib/api/migrate-guard";
 
-export async function POST() {
+export async function POST(request: Request) {
+  const denied = assertMigrationAllowed(request);
+  if (denied) return denied;
+
   try {
     // Check current structure
     const checkResult = await db.execute(
@@ -14,11 +18,9 @@ export async function POST() {
       `
     );
 
-    const columns = checkResult.rows || [];
-    const hasIdColumn = columns.some((col: any) => col.column_name === "id");
-    const sessionTokenIsPrimary = columns.some(
-      (col: any) => col.column_name === "session_token"
-    );
+    type ColRow = { column_name: string };
+    const columns = (checkResult.rows || []) as ColRow[];
+    const hasIdColumn = columns.some((col) => col.column_name === "id");
 
     // Check primary key constraints
     const pkResult = await db.execute(
@@ -31,10 +33,13 @@ export async function POST() {
       `
     );
 
-    const primaryKeys = (pkResult.rows || []).map((row: any) => row.attname);
+    type PkRow = { attname: string };
+    const primaryKeys = ((pkResult.rows || []) as PkRow[]).map(
+      (row) => row.attname
+    );
 
     console.log("Current sessions table structure:", {
-      columns: columns.map((c: any) => c.column_name),
+      columns: columns.map((c) => c.column_name),
       primaryKeys,
     });
 
@@ -82,7 +87,7 @@ export async function POST() {
         success: false,
         error: "Unexpected sessions table structure. Please check manually.",
         currentStructure: {
-          columns: columns.map((c: any) => c.column_name),
+          columns: columns.map((c) => c.column_name),
           primaryKeys,
         },
       });

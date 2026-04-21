@@ -22,7 +22,7 @@ import {
   changePassword,
   deleteAccount,
 } from "@/lib/actions";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   updateProfileSchema,
@@ -52,7 +52,9 @@ export default function ProfilePage() {
     formState: { errors: profileErrors },
     reset: resetProfile,
   } = useForm<UpdateProfileFormData>({
-    resolver: zodResolver(updateProfileSchema),
+    resolver: zodResolver(
+      updateProfileSchema
+    ) as Resolver<UpdateProfileFormData>,
   });
 
   // Password form

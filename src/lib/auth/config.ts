@@ -64,6 +64,9 @@ export const authConfig: NextAuthConfig = {
             role: user.role || "user",
           };
         } catch (error) {
+          if (error instanceof Error && error.message === "ACCOUNT_DEACTIVATED") {
+            throw error;
+          }
           console.error("Authorization error:", error);
           return null;
         }
@@ -114,7 +117,7 @@ export const authConfig: NextAuthConfig = {
       // If token is null (user was deactivated), invalidate session
       // The user will be redirected to login, and we can check for deactivation there
       if (!token) {
-        return null as any;
+        return null as unknown as typeof session;
       }
       
       if (session.user) {

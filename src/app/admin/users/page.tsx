@@ -268,7 +268,7 @@ export default function AdminUsersPage() {
             </div>
           </Card>
           <Card className="p-4">
-            <div className="text-sm text-gray-600">Admins</div>
+            <div className="text-sm text-gray-600">Administratoren</div>
             <div className="text-2xl font-bold text-blue-600">
               {stats.admins}
             </div>

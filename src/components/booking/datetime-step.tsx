@@ -171,7 +171,7 @@ export default function DateTimeStep() {
 
   return (
     <Card className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Rezervasyon 3/5 - Tarih/Saat</h1>
+      <h1 className="text-2xl font-bold mb-6">Buchung 3/5 – Datum & Uhrzeit</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Calendar Week Navigator */}
@@ -237,10 +237,11 @@ export default function DateTimeStep() {
         {/* Time Slots */}
         <div>
           <label className="block text-sm font-medium mb-3">
-            Saat Seçimi {!selectedDate && "(Önce bir tarih seçin)"}
+            Uhrzeit wählen{" "}
+            {!selectedDate && "(zuerst ein Datum wählen)"}
           </label>
           {loadingSlots ? (
-            <div className="text-center py-4 text-gray-500">Yükleniyor...</div>
+            <div className="text-center py-4 text-gray-500">Wird geladen…</div>
           ) : availableSlots.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {availableSlots.map((slot) => {
@@ -267,15 +268,15 @@ export default function DateTimeStep() {
                         "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
                     )}
                   >
-                    {slot.time} {!slot.available && "(dolu)"}
-                    {!selectedDate && slot.available && " (tarih seçin)"}
+                    {slot.time} {!slot.available && "(belegt)"}
+                    {!selectedDate && slot.available && " (Datum wählen)"}
                   </button>
                 );
               })}
             </div>
           ) : (
             <div className="text-center py-4 text-gray-500">
-              Lütfen bir tarih seçin
+              Bitte wählen Sie ein Datum
             </div>
           )}
           {errors.timeSlot && (
@@ -293,14 +294,14 @@ export default function DateTimeStep() {
             onClick={() => router.back()}
             className="flex-1"
           >
-            Geri
+            Zurück
           </Button>
           <Button
             type="submit"
             disabled={!selectedDate || !selectedTime}
             className="flex-1 bg-enex-primary hover:bg-enex-hover text-white disabled:opacity-50"
           >
-            Devam
+            Weiter
           </Button>
         </div>
       </form>

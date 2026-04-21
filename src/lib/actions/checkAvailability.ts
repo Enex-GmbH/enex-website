@@ -3,7 +3,7 @@
 import { db } from "../db/client";
 import { timeSlots } from "../db/schema";
 import { eq, and } from "drizzle-orm";
-import { getFranchiseIdFromHeaders } from "../franchise";
+import { resolveFranchiseId } from "../franchise";
 import { headers } from "next/headers";
 import { formatDateForDb } from "../booking-helpers";
 
@@ -18,17 +18,8 @@ export async function checkAvailability(
   time: string
 ): Promise<{ available: boolean; message?: string }> {
   try {
-    // Get franchise ID from headers
     const headersList = await headers();
-    // const franchiseId = await getFranchiseIdFromHeaders(headersList);
-    const franchiseId = 1;
-
-    if (!franchiseId) {
-      return {
-        available: false,
-        message: "Franchise not found",
-      };
-    }
+    const franchiseId = await resolveFranchiseId(headersList);
 
     const dateStr = formatDateForDb(date);
 

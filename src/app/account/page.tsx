@@ -22,6 +22,7 @@ import { de } from "date-fns/locale";
 import Link from "next/link";
 import type { bookings } from "@/lib/db/schema";
 import type { AddOn } from "@/store/booking-store";
+import { carTypeLabelDe } from "@/lib/ui-labels-de";
 
 type Booking = typeof bookings.$inferSelect;
 
@@ -118,7 +119,7 @@ export default function AccountPage() {
             <Link href="/admin/dashboard">
               <Button className="bg-enex-primary hover:bg-enex-hover text-white">
                 <Shield className="w-4 h-4 mr-2" />
-                Admin Dashboard
+                Verwaltung
               </Button>
             </Link>
           )}
@@ -231,7 +232,7 @@ export default function AccountPage() {
                         <div>
                           <p className="text-sm text-gray-500">Paket</p>
                           <p className="font-medium capitalize">
-                            {booking.plan} - {booking.carType}
+                            {booking.plan} - {carTypeLabelDe(booking.carType)}
                           </p>
                         </div>
                       </div>
@@ -257,7 +258,9 @@ export default function AccountPage() {
                       Array.isArray(booking.addons) &&
                       booking.addons.length > 0 && (
                         <div className="pt-2">
-                          <p className="text-sm text-gray-500 mb-1">Add-ons:</p>
+                          <p className="text-sm text-gray-500 mb-1">
+                            Zusatzoptionen:
+                          </p>
                           <div className="flex flex-wrap gap-2">
                             {(booking.addons as AddOn[]).map((addon, idx) => (
                               <span
@@ -275,7 +278,7 @@ export default function AccountPage() {
                     {booking.couponCode && (
                       <div className="pt-2">
                         <p className="text-sm text-gray-500">
-                          Kupon:{" "}
+                          Gutschein:{" "}
                           <span className="font-medium text-green-600">
                             {booking.couponCode}
                           </span>

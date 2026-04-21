@@ -3,7 +3,7 @@
 import { db } from "../db/client";
 import { timeSlots } from "../db/schema";
 import { eq, and, or } from "drizzle-orm";
-import { getFranchiseIdFromHeaders } from "../franchise";
+import { resolveFranchiseId } from "../franchise";
 import { headers } from "next/headers";
 import { formatDateForDb } from "../booking-helpers";
 
@@ -20,14 +20,8 @@ export async function getFullyBookedDates(
   endDate: Date
 ): Promise<string[]> {
   try {
-    // Get franchise ID from headers
     const headersList = await headers();
-    let franchiseId = await getFranchiseIdFromHeaders(headersList);
-
-    // If no franchise ID, use default for development
-    if (!franchiseId) {
-      franchiseId = 1;
-    }
+    const franchiseId = await resolveFranchiseId(headersList);
 
     const fullyBookedDates: string[] = [];
     const currentDate = new Date(startDate);
@@ -85,11 +79,7 @@ export async function getFullyBookedDates(
 export async function isDateFullyBooked(date: Date): Promise<boolean> {
   try {
     const headersList = await headers();
-    let franchiseId = await getFranchiseIdFromHeaders(headersList);
-
-    if (!franchiseId) {
-      franchiseId = 1;
-    }
+    const franchiseId = await resolveFranchiseId(headersList);
 
     const dateStr = formatDateForDb(date);
 
