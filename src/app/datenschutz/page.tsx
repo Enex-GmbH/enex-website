@@ -1,12 +1,28 @@
 /* eslint-disable react/no-unescaped-entities -- Legal copy uses quotation marks in body text */
+import type { Metadata } from "next";
 import {
   LegalSectionTitle,
   LegalSubTitle,
 } from "@/components/legal/legal-headings";
+import { getSiteUrl } from "@/lib/site-url";
 
-export const metadata = {
-  title: "Datenschutzerklärung | Enex",
-  description: "Datenschutzerklärung - Informationen zum Datenschutz",
+const url = `${getSiteUrl()}/datenschutz`;
+
+export const metadata: Metadata = {
+  title: "Datenschutzerklärung",
+  description:
+    "Datenschutzerklärung der Enex GmbH: Informationen zur Verarbeitung personenbezogener Daten auf dieser Website.",
+  alternates: { canonical: url },
+  openGraph: {
+    url,
+    title: "Datenschutz | ENEX Fahrzeugpflege",
+    description: "Datenschutzinformationen der Enex GmbH.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Datenschutz | ENEX Fahrzeugpflege",
+  },
 };
 
 export default function DatenschutzPage() {

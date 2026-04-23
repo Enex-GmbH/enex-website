@@ -1,8 +1,24 @@
+import type { Metadata } from "next";
 import { LegalSectionTitle } from "@/components/legal/legal-headings";
+import { getSiteUrl } from "@/lib/site-url";
 
-export const metadata = {
-  title: "Impressum | Enex",
-  description: "Impressum - Rechtliche Angaben",
+const url = `${getSiteUrl()}/impressum`;
+
+export const metadata: Metadata = {
+  title: "Impressum",
+  description:
+    "Impressum und rechtliche Angaben der Enex GmbH, ENEX Fahrzeugpflege.",
+  alternates: { canonical: url },
+  openGraph: {
+    url,
+    title: "Impressum | ENEX Fahrzeugpflege",
+    description: "Impressum und Kontakt der Enex GmbH.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Impressum | ENEX Fahrzeugpflege",
+  },
 };
 
 export default function ImpressumPage() {

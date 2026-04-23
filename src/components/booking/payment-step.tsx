@@ -77,17 +77,14 @@ export default function PaymentStep() {
       // Calculate final price with discount (in cents for consistency)
       const finalPriceInCents = Math.round(finalPrice.eur * 100);
 
-      // Step 1: Create booking in database with discounted price
-      const bookingResult = await createBooking(
-        {
-          location,
-          package: pkg,
-          dateTime,
-          contactDetails,
-          payment: data,
-        },
-        finalPriceInCents // Pass discounted price in cents
-      );
+      // Step 1: Create booking (final amount computed on server from line items + coupon)
+      const bookingResult = await createBooking({
+        location,
+        package: pkg,
+        dateTime,
+        contactDetails,
+        payment: data,
+      });
 
       if (!bookingResult.success || !bookingResult.bookingId) {
         alert(bookingResult.message || "Buchung konnte nicht erstellt werden");
@@ -151,7 +148,11 @@ export default function PaymentStep() {
     try {
       const result = await applyCoupon(couponCode, totalPrice.eur * 100); // Convert to cents
 
-      if (result.success && result.discount && result.discountedPrice) {
+      if (
+        result.success &&
+        result.discount !== undefined &&
+        result.discountedPrice !== undefined
+      ) {
         setCouponApplied(true);
         setDiscount(result.discount);
         // Convert discounted price back from cents to euros
@@ -243,15 +244,27 @@ export default function PaymentStep() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Payment Method Section */}
-        <div className="bg-white border rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <CreditCard className="w-5 h-5 text-enex-primary" />
-            <h3 className="font-semibold">Kartenzahlung (3DS/SCA)</h3>
+        {/* Payment method: real card UI coming later — overlay for now */}
+        <div className="relative overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="p-4 opacity-[0.62] select-none" aria-hidden="true">
+            <div className="flex items-center gap-2 mb-3">
+              <CreditCard className="w-5 h-5 text-gray-400" />
+              <h3 className="font-semibold text-gray-700">
+                Kartenzahlung (3DS/SCA)
+              </h3>
+            </div>
+            <p className="text-sm text-gray-500">
+              Die Zahlung wird sicher per 3D Secure abgewickelt
+            </p>
           </div>
-          <p className="text-sm text-gray-600">
-            Die Zahlung wird sicher per 3D Secure abgewickelt
-          </p>
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-lg bg-white/45 backdrop-blur-[1px]">
+            <span className="rounded-md border border-gray-300/80 bg-white/90 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-gray-800 shadow-sm">
+              Demnächst
+            </span>
+            <span className="max-w-[240px] text-center text-sm font-medium text-gray-800">
+              Online-Kartenzahlung folgt in Kürze
+            </span>
+          </div>
         </div>
 
         {/* Coupon Code */}

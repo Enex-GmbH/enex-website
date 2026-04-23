@@ -1,10 +1,22 @@
 "use server";
 
+import { db } from "@/lib/db/client";
+import { coupons } from "@/lib/db/schema";
+import { and, eq } from "drizzle-orm";
+import {
+  computeDiscountCents,
+  normalizeCouponCode,
+  type CouponDiscountType,
+} from "@/lib/coupon-pricing";
+
+function isCouponDiscountType(v: string): v is CouponDiscountType {
+  return v === "percentage" || v === "fixed";
+}
+
 /**
  * Validate and apply a coupon code
  * @param couponCode - The coupon code to validate
- * @param totalPrice - The total price before discount
- * @returns Object with discount information or error
+ * @param totalPrice - The total price before discount (euro cents)
  */
 export async function applyCoupon(
   couponCode: string,
@@ -16,8 +28,7 @@ export async function applyCoupon(
   message?: string;
 }> {
   try {
-    // Normalize coupon code
-    const code = couponCode.trim().toUpperCase();
+    const code = normalizeCouponCode(couponCode);
 
     if (!code) {
       return {
@@ -26,48 +37,41 @@ export async function applyCoupon(
       };
     }
 
-    // TODO: Implement actual coupon validation logic
-    // This should query a coupons table in your database
-    // Example structure:
-    // - coupons table with: code, discount_type (percentage/fixed), discount_value, valid_from, valid_until, usage_limit, etc.
+    const [row] = await db
+      .select()
+      .from(coupons)
+      .where(and(eq(coupons.code, code), eq(coupons.isActive, true)))
+      .limit(1);
 
-    // Mock coupon codes for now
-    const mockCoupons: Record<
-      string,
-      { discount: number; type: "percentage" | "fixed" }
-    > = {
-      WELCOME10: { discount: 10, type: "percentage" },
-      SAVE20: { discount: 20, type: "percentage" },
-      FIXED50: { discount: 50, type: "fixed" },
-    };
-
-    const coupon = mockCoupons[code];
-
-    if (!coupon) {
+    if (!row) {
       return {
         success: false,
         message: "Invalid coupon code",
       };
     }
 
-    // Calculate discount
-    let discountAmount: number;
-    if (coupon.type === "percentage") {
-      discountAmount = Math.round((totalPrice * coupon.discount) / 100);
-    } else {
-      discountAmount = coupon.discount;
+    if (!isCouponDiscountType(row.discountType)) {
+      return {
+        success: false,
+        message: "Invalid coupon code",
+      };
     }
 
-    // Ensure discount doesn't exceed total price
-    discountAmount = Math.min(discountAmount, totalPrice);
+    const { discountCents, finalCents } = computeDiscountCents(totalPrice, {
+      discountType: row.discountType,
+      discountValue: row.discountValue,
+    });
 
-    const discountedPrice = totalPrice - discountAmount;
+    const label =
+      row.discountType === "percentage"
+        ? `${row.discountValue}%`
+        : `${(row.discountValue / 100).toFixed(2)}€`;
 
     return {
       success: true,
-      discount: discountAmount,
-      discountedPrice,
-      message: `Coupon applied: ${coupon.discount}${coupon.type === "percentage" ? "%" : "€"} off`,
+      discount: discountCents,
+      discountedPrice: finalCents,
+      message: `Coupon applied: ${label} off`,
     };
   } catch (error) {
     console.error("Error applying coupon:", error);

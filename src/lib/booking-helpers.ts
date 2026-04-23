@@ -10,6 +10,29 @@ import type {
 import { format } from "date-fns";
 import { randomBytes } from "crypto";
 import { sumBookingTotal } from "@/lib/pricing";
+import { normalizeCouponCode } from "@/lib/coupon-pricing";
+
+/**
+ * Booking line total in euro cents (for coupons / payment).
+ */
+export function getBookingSubtotalCentsFromStore(storeData: {
+  location: LocationData | null;
+  package: PackageData | null;
+}): number {
+  const { location, package: pkg } = storeData;
+  if (!location || !pkg) {
+    return 0;
+  }
+  const euros = sumBookingTotal(
+    { tollFeeEur: location.tollFeeEur },
+    {
+      selectedPlan: pkg.selectedPlan,
+      carType: pkg.carType,
+      addOns: pkg.addOns,
+    }
+  );
+  return Math.round(euros * 100);
+}
 
 /**
  * Convert zone string to boolean for database storage
@@ -62,6 +85,7 @@ export interface BookingDbData {
   currency: string;
   stripePaymentIntentId?: string;
   status: string;
+  userId?: number;
 }
 
 /**
@@ -70,6 +94,7 @@ export interface BookingDbData {
  * @param franchiseId - The franchise ID for this booking
  * @param reference - The booking reference number
  * @param currency - The currency to use (defaults to EUR)
+ * @param loggedInUserId - If set, ties the booking to the authenticated user account
  * @returns Data formatted for database insertion
  */
 export function transformBookingStoreToDb(
@@ -83,7 +108,8 @@ export function transformBookingStoreToDb(
   franchiseId: number,
   reference: string,
   currency: string = "EUR",
-  discountedPrice?: number // Optional discounted price (in cents for EUR)
+  discountedPrice?: number, // Optional discounted price (in cents for EUR)
+  loggedInUserId?: number
 ): BookingDbData {
   const {
     location,
@@ -115,6 +141,7 @@ export function transformBookingStoreToDb(
   return {
     franchiseId,
     reference,
+    ...(loggedInUserId != null ? { userId: loggedInUserId } : {}),
     // Location data
     postalCode: location.postalCode,
     address: location.address,
@@ -142,7 +169,9 @@ export function transformBookingStoreToDb(
     agreedToPrivacy: payment.agreedToPrivacy,
     agreedToService: payment.agreedToService,
     // Payment data
-    couponCode: payment.couponCode,
+    couponCode: payment.couponCode?.trim()
+      ? normalizeCouponCode(payment.couponCode)
+      : undefined,
     totalPrice,
     currency,
     // Status (defaults to pending)

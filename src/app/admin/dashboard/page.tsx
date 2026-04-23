@@ -19,6 +19,8 @@ import {
   RefreshCw,
   Bell,
   Users,
+  Ticket,
+  Wrench,
 } from "lucide-react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
@@ -29,6 +31,8 @@ import {
   updateBooking,
   deleteBooking,
   cancelBooking,
+  getMaintenanceMode,
+  setMaintenanceMode,
 } from "@/lib/actions";
 import { format, parse } from "date-fns";
 import { de } from "date-fns/locale";
@@ -60,6 +64,7 @@ export default function AdminDashboardPage() {
     null
   );
   const [newBookingsCount, setNewBookingsCount] = useState(0);
+  const [maintenanceSaving, setMaintenanceSaving] = useState(false);
   const lastViewedTimestampRef = useRef<string | null>(null);
   const previousBookingIdsRef = useRef<Set<number>>(new Set());
 
@@ -118,6 +123,36 @@ export default function AdminDashboardPage() {
     refetchOnWindowFocus: true,
     staleTime: 60000, // Consider data stale after 1 minute
   });
+
+  const {
+    data: maintenanceEnabled,
+    isLoading: maintenanceLoading,
+  } = useQuery({
+    queryKey: ["admin-maintenance"],
+    queryFn: async () => {
+      const result = await getMaintenanceMode();
+      if (!result.success) {
+        throw new Error(result.error || "Laden fehlgeschlagen");
+      }
+      return result.enabled ?? false;
+    },
+    enabled: !!session?.user && session.user.role === "admin",
+    staleTime: 15000,
+  });
+
+  const handleMaintenanceToggle = async (enabled: boolean) => {
+    setMaintenanceSaving(true);
+    try {
+      const result = await setMaintenanceMode({ enabled });
+      if (!result.success) {
+        alert(result.error || "Speichern fehlgeschlagen");
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: ["admin-maintenance"] });
+    } finally {
+      setMaintenanceSaving(false);
+    }
+  };
 
   const bookings = bookingsData || [];
   const error = queryError ? (queryError as Error).message : null;
@@ -355,11 +390,48 @@ export default function AdminDashboardPage() {
                 Benutzer
               </Button>
             </Link>
+            <Link href="/admin/coupons">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Ticket className="w-4 h-4" />
+                Gutscheine
+              </Button>
+            </Link>
             <Link href="/account">
               <Button variant="outline">Zurück zum Konto</Button>
             </Link>
           </div>
         </div>
+
+        <Card className="mb-6 border-amber-200 bg-amber-50/60 p-4 md:p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-amber-200 bg-white text-gray-900">
+                <Wrench className="h-5 w-5" strokeWidth={1.5} />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold uppercase tracking-wide text-gray-900">
+                  Wartungsmodus
+                </h2>
+                <p className="mt-1 text-sm text-gray-700 leading-relaxed max-w-xl">
+                  Besucher sehen nur eine Hinweisseite und keine Buchung. Admins
+                  behalten vollen Zugriff. Änderung wirkt nach wenigen Sekunden.
+                </p>
+              </div>
+            </div>
+            <label className="flex cursor-pointer items-center gap-3 shrink-0 rounded-lg border border-amber-200 bg-white px-4 py-3 sm:py-2">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                checked={Boolean(maintenanceEnabled)}
+                disabled={maintenanceLoading || maintenanceSaving}
+                onChange={(e) => handleMaintenanceToggle(e.target.checked)}
+              />
+              <span className="text-sm font-semibold text-gray-900">
+                {maintenanceLoading ? "…" : maintenanceEnabled ? "Aktiv" : "Aus"}
+              </span>
+            </label>
+          </div>
+        </Card>
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

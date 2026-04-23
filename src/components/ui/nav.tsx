@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Menu, X, User, LogOut, Shield, Settings } from "lucide-react";
+import { Menu, X, User, LogOut, Shield, Settings, Ticket } from "lucide-react";
 
 export function Navigation() {
   const { data: session, status } = useSession();
@@ -106,14 +106,24 @@ export function Navigation() {
                     <span>Profil</span>
                   </Link>
                   {session.user?.role === "admin" && (
-                    <Link
-                      href="/admin/dashboard"
-                      className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-gray-100 transition-colors"
-                      onClick={() => setAvatarDropdownOpen(false)}
-                    >
-                      <Shield className="h-4 w-4" />
-                      <span>Verwaltung</span>
-                    </Link>
+                    <>
+                      <Link
+                        href="/admin/dashboard"
+                        className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-gray-100 transition-colors"
+                        onClick={() => setAvatarDropdownOpen(false)}
+                      >
+                        <Shield className="h-4 w-4" />
+                        <span>Verwaltung</span>
+                      </Link>
+                      <Link
+                        href="/admin/coupons"
+                        className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-gray-100 transition-colors"
+                        onClick={() => setAvatarDropdownOpen(false)}
+                      >
+                        <Ticket className="h-4 w-4" />
+                        <span>Gutscheine</span>
+                      </Link>
+                    </>
                   )}
                   <button
                     className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-gray-100 transition-colors text-left w-full"
@@ -204,13 +214,22 @@ export function Navigation() {
                   Profil
                 </Link>
                 {session.user?.role === "admin" && (
-                  <Link
-                    href="/admin/dashboard"
-                    className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
-                    onClick={() => setOpen(false)}
-                  >
-                    Verwaltung
-                  </Link>
+                  <>
+                    <Link
+                      href="/admin/dashboard"
+                      className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      Verwaltung
+                    </Link>
+                    <Link
+                      href="/admin/coupons"
+                      className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
+                      onClick={() => setOpen(false)}
+                    >
+                      Gutscheine
+                    </Link>
+                  </>
                 )}
               </>
             )}

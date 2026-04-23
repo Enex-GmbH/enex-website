@@ -25,6 +25,29 @@ export const franchises = pgTable("franchises", {
 });
 
 /* ----------------------------------------
+   COUPONS (global codes)
+---------------------------------------- */
+export const coupons = pgTable("coupons", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 50 }).notNull().unique(),
+  discountType: varchar("discount_type", { length: 20 }).notNull(), // 'percentage' | 'fixed'
+  discountValue: integer("discount_value").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+/* ----------------------------------------
+   APP SETTINGS (singleton row id = 1)
+---------------------------------------- */
+export const appSettings = pgTable("app_settings", {
+  id: integer("id").primaryKey(),
+  maintenanceEnabled: boolean("maintenance_enabled")
+    .notNull()
+    .default(false),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+/* ----------------------------------------
    BOOKINGS
 ---------------------------------------- */
 export const bookings = pgTable("bookings", {
@@ -33,6 +56,9 @@ export const bookings = pgTable("bookings", {
   franchiseId: integer("franchise_id")
     .notNull()
     .references(() => franchises.id),
+
+  /** Set for logged-in customers so "Meine Buchungen" matches the account, not just contact email. */
+  userId: integer("user_id").references(() => users.id),
 
   reference: varchar("reference", { length: 20 }).notNull().unique(),
 

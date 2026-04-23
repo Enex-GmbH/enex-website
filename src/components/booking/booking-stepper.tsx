@@ -55,6 +55,11 @@ export default function BookingStepper() {
                 >
                   {step.label}
                 </span>
+                {isCurrent && step.number === 5 && (
+                  <span className="mt-1 max-w-[100px] text-center text-[10px] font-medium leading-tight text-gray-500 md:text-xs">
+                    Demnächst
+                  </span>
+                )}
               </div>
 
               {!isLast && (

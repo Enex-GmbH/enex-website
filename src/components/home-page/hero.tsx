@@ -9,9 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { Input } from "../ui/input";
 import { PostalCodeSelect } from "../ui/postal-code-select";
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { CalendarDays, CarFront, MapPin, Search } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Calendar } from "../ui/calendar";
@@ -24,6 +23,7 @@ import {
   normalizeCarType,
 } from "@/store/booking-store";
 import { getFullyBookedDates } from "@/lib/actions/getFullyBookedDates";
+import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 
 const HeroBlob = () => {
@@ -106,42 +106,33 @@ function Hero() {
     prevHadBookingSlice.current = hasSlice;
   }, [location, pkg, dateTime]);
 
-  // Fetch fully booked dates on component mount
-  useEffect(() => {
-    const startDate = startOfMonth(new Date());
-    const endDate = endOfMonth(addMonths(new Date(), 1));
-
-    setIsLoadingBookedDates(true);
-    getFullyBookedDates(startDate, endDate)
-      .then((bookedDates) => {
-        setFullyBookedDates(bookedDates);
-        setIsLoadingBookedDates(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching fully booked dates:", error);
-        setFullyBookedDates([]);
-        setIsLoadingBookedDates(false);
-      });
-  }, []); // Only on mount
-
-  // Fetch when calendar opens or month changes
+  // Ein Request pro Kalender-Öffnung bzw. Monatswechsel (kein Prefetch auf der Startseite).
   useEffect(() => {
     if (!isCalendarOpen) return;
 
     const startDate = startOfMonth(calendarMonth);
     const endDate = endOfMonth(addMonths(calendarMonth, 1));
 
+    let cancelled = false;
     setIsLoadingBookedDates(true);
     getFullyBookedDates(startDate, endDate)
       .then((bookedDates) => {
-        setFullyBookedDates(bookedDates);
-        setIsLoadingBookedDates(false);
+        if (!cancelled) {
+          setFullyBookedDates(bookedDates);
+          setIsLoadingBookedDates(false);
+        }
       })
       .catch((error) => {
         console.error("Error fetching fully booked dates:", error);
-        setFullyBookedDates([]);
-        setIsLoadingBookedDates(false);
+        if (!cancelled) {
+          setFullyBookedDates([]);
+          setIsLoadingBookedDates(false);
+        }
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [isCalendarOpen, calendarMonth]);
 
   // Function to check if a date is disabled (fully booked or in the past)
@@ -278,10 +269,9 @@ function Hero() {
                   onValueChange={(value) => {
                     const v = value as CarType;
                     setCarType(v);
-                    // Immediately save to store when car class is selected
                     setPackage({
                       carType: v,
-                      selectedPlan: pkg?.selectedPlan || "basic", // Keep existing plan or default
+                      selectedPlan: pkg?.selectedPlan || "basic",
                       addOns: pkg?.addOns || [],
                     });
                   }}
@@ -313,23 +303,28 @@ function Hero() {
                     className="w-auto p-0 !bg-white"
                     align="start"
                   >
-                    {isLoadingBookedDates && fullyBookedDates.length === 0 ? (
-                      <div className="p-4 text-center text-sm text-gray-500 min-w-[300px]">
-                        Wird geladen…
-                      </div>
-                    ) : (
+                    <div className="relative min-w-[300px]">
+                      {isLoadingBookedDates && (
+                        <div className="absolute inset-x-0 top-0 z-10 flex justify-center border-b border-gray-100 bg-white/95 py-1.5 text-xs text-gray-500">
+                          Verfügbarkeit wird geladen…
+                        </div>
+                      )}
                       <Calendar
-                        key={`calendar-${fullyBookedDates.length}`} // Force re-render when booked dates change
+                        key={format(calendarMonth, "yyyy-MM")}
+                        className={cn(
+                          isLoadingBookedDates && "pt-8 opacity-90"
+                        )}
                         mode="single"
                         selected={date}
                         onSelect={(selectedDate) => {
-                          // Only allow selection if date is not disabled
-                          if (selectedDate && !isDateDisabled(selectedDate)) {
+                          if (
+                            selectedDate &&
+                            !isDateDisabled(selectedDate)
+                          ) {
                             setDate(selectedDate);
-                            // Immediately save to store when date is selected
                             setDateTime({
                               date: selectedDate,
-                              timeSlot: dateTime?.timeSlot || "09:30", // Keep existing time slot or default
+                              timeSlot: dateTime?.timeSlot || "09:30",
                             });
                             setIsCalendarOpen(false);
                           }
@@ -340,21 +335,20 @@ function Hero() {
                         disabled={isDateDisabled}
                         locale={de}
                       />
-                    )}
+                    </div>
                   </PopoverContent>
                 </Popover>
               </div>
 
-              {/* Search Button */}
               <Button
+                type="button"
                 onClick={handleSearch}
-                className="mt-2 md:mt-0 h-12 flex items-center gap-2 text-white rounded-b-sm bg-enex-primary hover:bg-enex-hover"
+                className="mt-2 flex h-12 items-center gap-2 rounded-lg bg-gray-900 text-white hover:bg-black md:mt-0"
               >
-                <Search className="w-4 h-4" />
+                <Search className="h-4 w-4" strokeWidth={2} />
                 Suchen
               </Button>
             </motion.div>
-            {/* SEARCH AREA */}
           </div>
           <motion.div
             initial={{ opacity: 0, x: 30 }}

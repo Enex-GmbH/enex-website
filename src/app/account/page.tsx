@@ -42,7 +42,7 @@ export default function AccountPage() {
     }
 
     setLoading(true);
-    getUserBookings(session.user.email)
+    getUserBookings()
       .then((result) => {
         if (result.success && result.bookings) {
           setBookings(result.bookings);
@@ -137,7 +137,7 @@ export default function AccountPage() {
               onClick={() => {
                 if (!session?.user?.email) return;
                 setLoading(true);
-                getUserBookings(session.user.email)
+                getUserBookings()
                   .then((result) => {
                     if (result.success && result.bookings) {
                       setBookings(result.bookings);

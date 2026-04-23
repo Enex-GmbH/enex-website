@@ -8,6 +8,11 @@ export { getFullyBookedDates, isDateFullyBooked } from "./getFullyBookedDates";
 export { applyCoupon } from "./applyCoupon";
 export { createPaymentIntent } from "./createPaymentIntent";
 export { createBooking } from "./createBooking";
+export { getCoupons } from "./admin/getCoupons";
+export { createCoupon } from "./admin/createCoupon";
+export { deleteCoupon } from "./admin/deleteCoupon";
+export { getMaintenanceMode } from "./admin/getMaintenanceMode";
+export { setMaintenanceMode } from "./admin/setMaintenanceMode";
 export { confirmBooking, getBookingByReference } from "./confirmBooking";
 export { getUserBookings } from "./getUserBookings";
 

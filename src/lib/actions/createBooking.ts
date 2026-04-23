@@ -1,14 +1,27 @@
 "use server";
 
 import { db } from "../db/client";
-import { bookings, timeSlots, bookingEvents } from "../db/schema";
+import {
+  bookings,
+  timeSlots,
+  bookingEvents,
+  coupons,
+  payments,
+} from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { resolveFranchiseId } from "../franchise";
 import { headers } from "next/headers";
+import { auth } from "@/app/api/auth/[...nextauth]/route";
 import {
   transformBookingStoreToDb,
   generateBookingReference,
+  getBookingSubtotalCentsFromStore,
 } from "../booking-helpers";
+import {
+  computeDiscountCents,
+  normalizeCouponCode,
+  type CouponDiscountType,
+} from "@/lib/coupon-pricing";
 import type {
   LocationData,
   PackageData,
@@ -17,21 +30,88 @@ import type {
   PaymentData,
 } from "@/store/booking-store";
 
+function isCouponDiscountType(v: string): v is CouponDiscountType {
+  return v === "percentage" || v === "fixed";
+}
+
+/**
+ * If this slot is held by a pending booking for the same customer, release it so
+ * checkout can retry (e.g. after payment/confirm failed or user applied a coupon).
+ */
+async function releaseStalePendingReservationIfSameCustomer(params: {
+  franchiseId: number;
+  date: string;
+  time: string;
+  customerEmail: string;
+  userId?: number;
+}): Promise<void> {
+  const { franchiseId, date, time, customerEmail, userId } = params;
+  const emailNorm = customerEmail.trim().toLowerCase();
+
+  const [slot] = await db
+    .select()
+    .from(timeSlots)
+    .where(
+      and(
+        eq(timeSlots.franchiseId, franchiseId),
+        eq(timeSlots.date, date),
+        eq(timeSlots.time, time)
+      )
+    )
+    .limit(1);
+
+  if (!slot?.bookingId || slot.isBooked) {
+    return;
+  }
+
+  const [held] = await db
+    .select()
+    .from(bookings)
+    .where(eq(bookings.id, slot.bookingId))
+    .limit(1);
+
+  if (!held) {
+    return;
+  }
+
+  const sameEmail = held.customerEmail.trim().toLowerCase() === emailNorm;
+  const sameUser =
+    userId != null && held.userId != null && held.userId === userId;
+
+  if (
+    held.status !== "pending" ||
+    held.franchiseId !== franchiseId ||
+    (!sameEmail && !sameUser)
+  ) {
+    return;
+  }
+
+  await db
+    .update(timeSlots)
+    .set({ bookingId: null })
+    .where(eq(timeSlots.id, slot.id));
+
+  await db
+    .delete(bookingEvents)
+    .where(eq(bookingEvents.bookingId, held.id));
+
+  await db.delete(payments).where(eq(payments.bookingId, held.id));
+
+  await db.delete(bookings).where(eq(bookings.id, held.id));
+}
+
 /**
  * Create a new booking with status "pending"
  * @param storeData - Complete booking data from Zustand store
  * @returns Created booking data or error
  */
-export async function createBooking(
-  storeData: {
-    location: LocationData | null;
-    package: PackageData | null;
-    dateTime: DateTimeData | null;
-    contactDetails: ContactDetails | null;
-    payment: PaymentData | null;
-  },
-  discountedPriceInCents?: number // Optional discounted price in cents
-): Promise<{
+export async function createBooking(storeData: {
+  location: LocationData | null;
+  package: PackageData | null;
+  dateTime: DateTimeData | null;
+  contactDetails: ContactDetails | null;
+  payment: PaymentData | null;
+}): Promise<{
   success: boolean;
   bookingId?: number;
   reference?: string;
@@ -40,6 +120,12 @@ export async function createBooking(
   try {
     const headersList = await headers();
     const franchiseId = await resolveFranchiseId(headersList);
+    const session = await auth();
+    const rawId = session?.user?.id
+      ? parseInt(session.user.id, 10)
+      : undefined;
+    const loggedInUserId =
+      rawId != null && !Number.isNaN(rawId) ? rawId : undefined;
 
     // Validate all required data is present
     if (
@@ -53,6 +139,31 @@ export async function createBooking(
         success: false,
         message: "Missing required booking information",
       };
+    }
+
+    const subtotalCents = getBookingSubtotalCentsFromStore(storeData);
+    const rawCoupon = storeData.payment.couponCode?.trim();
+    let finalPriceInCents = subtotalCents;
+
+    if (rawCoupon) {
+      const code = normalizeCouponCode(rawCoupon);
+      const [row] = await db
+        .select()
+        .from(coupons)
+        .where(and(eq(coupons.code, code), eq(coupons.isActive, true)))
+        .limit(1);
+
+      if (!row || !isCouponDiscountType(row.discountType)) {
+        return {
+          success: false,
+          message: "Invalid or expired coupon code",
+        };
+      }
+
+      finalPriceInCents = computeDiscountCents(subtotalCents, {
+        discountType: row.discountType,
+        discountValue: row.discountValue,
+      }).finalCents;
     }
 
     // Generate unique booking reference
@@ -83,15 +194,23 @@ export async function createBooking(
       };
     }
 
-    // Transform store data to database format
-    // Pass discounted price if provided (it's in cents, will be converted in the helper)
+    // Transform store data to database format (server-authoritative cents)
     const bookingData = transformBookingStoreToDb(
       storeData,
       franchiseId,
       reference,
-      "EUR", // Default currency
-      discountedPriceInCents
+      "EUR",
+      finalPriceInCents,
+      loggedInUserId
     );
+
+    await releaseStalePendingReservationIfSameCustomer({
+      franchiseId,
+      date: bookingData.date,
+      time: bookingData.time,
+      customerEmail: bookingData.customerEmail,
+      userId: loggedInUserId,
+    });
 
     // Check if time slot is still available
     const slotCheck = await db

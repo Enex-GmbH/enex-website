@@ -53,6 +53,13 @@ export async function checkAvailability(
       };
     }
 
+    if (timeSlot.bookingId) {
+      return {
+        available: false,
+        message: "This time slot is reserved",
+      };
+    }
+
     return {
       available: true,
     };
