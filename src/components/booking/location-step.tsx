@@ -10,11 +10,9 @@ import { useBookingStore } from "@/store/booking-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { PlacesAutocomplete } from "@/components/ui/places-autocomplete";
 import { PostalCodeSelect } from "@/components/ui/postal-code-select";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { MapPin } from "lucide-react";
 
 export default function LocationStep() {
   const router = useRouter();
@@ -40,7 +38,6 @@ export default function LocationStep() {
 
   const postalCode = watch("postalCode");
   const zone = watch("zone");
-  const address = watch("address");
 
   // Calculate toll fee based on zone
   useEffect(() => {
@@ -66,11 +63,6 @@ export default function LocationStep() {
       }
     }
   }, [postalCode, setValue]);
-
-  // Handle place selection from Google Places autocomplete (address only — PLZ stays on dropdown)
-  const handlePlaceSelect = (place: { address: string }) => {
-    setValue("address", place.address);
-  };
 
   const onSubmit = (data: LocationFormData) => {
     setLocation({
@@ -112,14 +104,14 @@ export default function LocationStep() {
         {/* Address */}
         <div>
           <label htmlFor="address" className="block text-sm font-medium mb-2">
-            Adresse (Autocomplete)
+            Adresse
           </label>
-          <PlacesAutocomplete
+          <Input
             id="address"
-            value={address || ""}
-            onChange={(value) => setValue("address", value)}
-            onPlaceSelect={handlePlaceSelect}
+            type="text"
+            autoComplete="street-address"
             placeholder="Straße und Hausnummer"
+            {...register("address")}
             className={errors.address ? "border-red-500" : ""}
           />
           {errors.address && (

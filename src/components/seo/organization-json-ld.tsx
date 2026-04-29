@@ -13,7 +13,7 @@ const structuredData = () => {
       "Professionelle mobile Fahrzeugpflege – Buchung und Serviceinformationen online.",
     image: `${url}/opengraph-image`,
     telephone: "+49-7233-9749801",
-    email: "enes@autohaus-enzklusive.de",
+    email: "hallo@enexdetailing.de",
     address: {
       "@type": "PostalAddress",
       streetAddress: "Bahnhofstr. 59",

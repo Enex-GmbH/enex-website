@@ -59,19 +59,19 @@ const Footer = () => {
               <li className="flex items-start gap-2 text-sm">
                 <Mail className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <a
-                  href="mailto:info@enex.de"
+                  href="mailto:hallo@enexdetailing.de"
                   className="hover:text-white transition-colors"
                 >
-                  info@enex.de
+                  hallo@enexdetailing.de
                 </a>
               </li>
               <li className="flex items-start gap-2 text-sm">
                 <Phone className="w-4 h-4 mt-0.5 flex-shrink-0" />
                 <a
-                  href="tel:+491234567890"
+                  href="tel:+4972339749801"
                   className="hover:text-white transition-colors"
                 >
-                  +49 123 456 7890
+                  +49 7233 9749801
                 </a>
               </li>
               <li className="flex items-start gap-2 text-sm">

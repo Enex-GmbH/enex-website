@@ -43,7 +43,7 @@ export default function ImpressumPage() {
             <ul className="list-none space-y-2 pl-0">
               <li>
                 <span className="font-medium text-gray-900">Telefon:</span>{" "}
-                +497233 9749801
+                +49 7233 9749801
               </li>
               <li>
                 <span className="font-medium text-gray-900">Fax:</span>{" "}
@@ -52,10 +52,10 @@ export default function ImpressumPage() {
               <li>
                 <span className="font-medium text-gray-900">eMail:</span>{" "}
                 <a
-                  href="mailto:enes@autohaus-enzklusive.de"
+                  href="mailto:hallo@enexdetailing.de"
                   className="text-enex-primary underline decoration-gray-300 underline-offset-2 hover:decoration-enex-primary"
                 >
-                  enes@autohaus-enzklusive.de
+                  hallo@enexdetailing.de
                 </a>
               </li>
             </ul>
