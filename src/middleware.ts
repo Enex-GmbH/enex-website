@@ -3,6 +3,14 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { getMaintenanceEnabledEdge } from "@/lib/maintenance/read-flag-edge";
 
+/** Auth.js uses `__Secure-` cookie names on HTTPS; `getToken` must match or middleware sees no session. */
+function isHttpsRequest(request: NextRequest): boolean {
+  return (
+    request.nextUrl.protocol === "https:" ||
+    request.headers.get("x-forwarded-proto") === "https"
+  );
+}
+
 function isStaticLikePath(pathname: string): boolean {
   if (pathname === "/robots.txt" || pathname === "/sitemap.xml") {
     return true;
@@ -24,9 +32,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+
   const token = await getToken({
     req: request,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: authSecret,
+    secureCookie: isHttpsRequest(request),
   });
 
   let maintenance = false;

@@ -50,7 +50,6 @@ function LoginForm() {
         setError(
           "Ihr Konto wurde deaktiviert. Bitte kontaktieren Sie den Administrator für weitere Informationen."
         );
-        setIsLoading(false);
         return;
       }
 
@@ -62,12 +61,18 @@ function LoginForm() {
 
       if (result?.error) {
         setError("Ungültige E-Mail-Adresse oder Passwort");
-        setIsLoading(false);
         return;
       }
 
-      // Redirect to account page on success
-      router.push("/account");
+      const rawCallback = searchParams.get("callbackUrl");
+      const safeCallback =
+        rawCallback &&
+        rawCallback.startsWith("/") &&
+        !rawCallback.startsWith("//")
+          ? rawCallback
+          : null;
+
+      router.push(safeCallback ?? "/account");
       router.refresh();
     } catch (err) {
       // Check if error is due to account deactivation
@@ -78,6 +83,7 @@ function LoginForm() {
       } else {
         setError("Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.");
       }
+    } finally {
       setIsLoading(false);
     }
   };
