@@ -7,6 +7,7 @@ import {
   bookingEvents,
   coupons,
   payments,
+  franchises,
 } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { resolveFranchiseId } from "../franchise";
@@ -120,6 +121,21 @@ export async function createBooking(storeData: {
   try {
     const headersList = await headers();
     const franchiseId = await resolveFranchiseId(headersList);
+
+    const [franchiseRow] = await db
+      .select({ id: franchises.id })
+      .from(franchises)
+      .where(eq(franchises.id, franchiseId))
+      .limit(1);
+
+    if (!franchiseRow) {
+      return {
+        success: false,
+        message:
+          "Kein Mandant für diese Buchung konfiguriert. Bitte Datenbank-Migrationen ausführen (Standard-Mandant fehlt) oder den Administrator kontaktieren.",
+      };
+    }
+
     const session = await auth();
     const rawId = session?.user?.id
       ? parseInt(session.user.id, 10)
