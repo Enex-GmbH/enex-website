@@ -78,6 +78,13 @@
       "when": 1776970312648,
       "tag": "0010_bored_sleepwalker",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1776970312649,
+      "tag": "0011_sessions_session_token_pk",
+      "breakpoints": true
     }
   ]
 }
