@@ -6,10 +6,21 @@ import { MapPin, Car, Calendar, Euro } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { carTypeLabelDe } from "@/lib/ui-labels-de";
+import { getBookingTotals } from "@/lib/pricing";
+import { usePathname } from "next/navigation";
 
 export default function BookingSummary() {
-  const { location, package: pkg, dateTime, getTotalPrice } = useBookingStore();
-  const totalPrice = getTotalPrice();
+  const pathname = usePathname();
+  const location = useBookingStore((s) => s.location);
+  const pkg = useBookingStore((s) => s.package);
+  const dateTime = useBookingStore((s) => s.dateTime);
+  const couponAdjustment = useBookingStore((s) => s.couponAdjustment);
+  const totalPrice = getBookingTotals(location, pkg);
+  const showCouponInSummary =
+    pathname === "/booking/payment" && couponAdjustment !== null;
+  const displayTotalEur = showCouponInSummary
+    ? couponAdjustment.discountedTotalEur
+    : totalPrice.eur;
 
   return (
     <Card className="p-6 sticky top-4">
@@ -87,14 +98,31 @@ export default function BookingSummary() {
 
         {/* Total Price */}
         {(pkg || location) && (
-          <div className="pt-4 border-t border-gray-200">
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-              <Euro className="w-4 h-4" />
-              <span>Gesamt (inkl. MwSt.):</span>
+          <div className="pt-4 border-t border-gray-200 space-y-2">
+            {showCouponInSummary ? (
+              <>
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Zwischensumme</span>
+                  <span className="font-medium tabular-nums">€{totalPrice.eur}</span>
+                </div>
+                <div className="flex justify-between text-sm text-green-600">
+                  <span>Rabatt</span>
+                  <span className="font-medium tabular-nums">
+                    -€
+                    {(couponAdjustment.discountCents / 100).toFixed(2)}
+                  </span>
+                </div>
+              </>
+            ) : null}
+            <div>
+              <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                <Euro className="w-4 h-4" />
+                <span>Gesamt (inkl. MwSt.):</span>
+              </div>
+              <p className="text-xl font-bold text-enex-primary tabular-nums">
+                €{displayTotalEur}
+              </p>
             </div>
-            <p className="text-xl font-bold text-enex-primary">
-              €{totalPrice.eur}
-            </p>
           </div>
         )}
       </div>

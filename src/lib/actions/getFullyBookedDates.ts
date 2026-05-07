@@ -6,8 +6,8 @@ import { eq, and, gte, lte } from "drizzle-orm";
 import { resolveFranchiseId } from "../franchise";
 import { headers } from "next/headers";
 import { formatDateForDb } from "../booking-helpers";
-
-const defaultTimeSlots = ["09:30", "11:00", "13:00", "15:00", "17:00"];
+import type { PlanType } from "@/store/booking-store";
+import { getExpectedBookingTimeSlots } from "../booking-time-slots";
 
 type SlotLite = {
   date: string;
@@ -19,7 +19,8 @@ type SlotLite = {
 function computeFullyBookedInRange(
   rows: SlotLite[],
   startDate: Date,
-  endDate: Date
+  endDate: Date,
+  plan: PlanType
 ): string[] {
   const byDate = new Map<string, SlotLite[]>();
   for (const row of rows) {
@@ -36,17 +37,23 @@ function computeFullyBookedInRange(
 
   while (cursor <= end) {
     const dateStr = formatDateForDb(cursor);
+    const expectedSlots = getExpectedBookingTimeSlots(cursor, plan);
+
+    if (expectedSlots.length === 0) {
+      cursor.setDate(cursor.getDate() + 1);
+      continue;
+    }
+
     const slots = byDate.get(dateStr) ?? [];
 
-    if (slots.length > 0) {
-      const bookedDefaultSlots = defaultTimeSlots.filter((time) => {
-        const slot = slots.find((s) => s.time === time);
-        return slot && (slot.isBooked || slot.bookingId);
-      });
+    /* Komplett belegt, wenn jedes erwartete Fenster in der DB liegt und gebucht/reserviert ist. */
+    const bookedAll = expectedSlots.filter((time) => {
+      const slot = slots.find((s) => s.time === time);
+      return slot && (slot.isBooked || slot.bookingId);
+    });
 
-      if (bookedDefaultSlots.length === defaultTimeSlots.length) {
-        fullyBookedDates.push(dateStr);
-      }
+    if (bookedAll.length === expectedSlots.length) {
+      fullyBookedDates.push(dateStr);
     }
 
     cursor.setDate(cursor.getDate() + 1);
@@ -63,7 +70,8 @@ function computeFullyBookedInRange(
  */
 export async function getFullyBookedDates(
   startDate: Date,
-  endDate: Date
+  endDate: Date,
+  plan: PlanType = "basic"
 ): Promise<string[]> {
   try {
     const headersList = await headers();
@@ -88,7 +96,7 @@ export async function getFullyBookedDates(
         )
       );
 
-    return computeFullyBookedInRange(rows, startDate, endDate);
+    return computeFullyBookedInRange(rows, startDate, endDate, plan);
   } catch (error) {
     console.error("Error getting fully booked dates:", error);
     return [];
@@ -100,7 +108,10 @@ export async function getFullyBookedDates(
  * @param date - Date to check
  * @returns true if the date is fully booked
  */
-export async function isDateFullyBooked(date: Date): Promise<boolean> {
+export async function isDateFullyBooked(
+  date: Date,
+  plan: PlanType = "basic"
+): Promise<boolean> {
   try {
     const headersList = await headers();
     const franchiseId = await resolveFranchiseId(headersList);
@@ -119,16 +130,21 @@ export async function isDateFullyBooked(date: Date): Promise<boolean> {
         and(eq(timeSlots.franchiseId, franchiseId), eq(timeSlots.date, dateStr))
       );
 
+    const expectedSlots = getExpectedBookingTimeSlots(date, plan);
+    if (expectedSlots.length === 0) {
+      return false;
+    }
+
     if (rows.length === 0) {
       return false;
     }
 
-    const bookedDefaultSlots = defaultTimeSlots.filter((time) => {
+    const bookedAll = expectedSlots.filter((time) => {
       const slot = rows.find((s) => s.time === time);
       return slot && (slot.isBooked || slot.bookingId);
     });
 
-    return bookedDefaultSlots.length === defaultTimeSlots.length;
+    return bookedAll.length === expectedSlots.length;
   } catch (error) {
     console.error("Error checking if date is fully booked:", error);
     return false;

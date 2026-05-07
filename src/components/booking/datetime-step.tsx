@@ -9,7 +9,6 @@ import {
 import { useBookingStore } from "@/store/booking-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Calendar } from "@/components/ui/calendar";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -17,35 +16,65 @@ import { format, addDays, startOfWeek, isBefore, startOfDay } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { getAvailableTimeSlots } from "@/lib/actions/getAvailableTimeSlots";
-
-const defaultTimeSlots = ["09:30", "11:00", "13:00", "15:00", "17:00"];
+import {
+  BOOKING_SLOTS_WEEKDAY,
+  BOOKING_SLOT_EXCLUSIVE_WEEKDAY,
+  getExpectedBookingTimeSlots,
+  isBookingDaySelectable,
+} from "@/lib/booking-time-slots";
 
 export default function DateTimeStep() {
   const router = useRouter();
-  const { dateTime, setDateTime, isStepComplete } = useBookingStore();
+  const { dateTime, setDateTime, isStepComplete, package: pkg } =
+    useBookingStore();
+  const selectedPlan = pkg?.selectedPlan ?? "basic";
 
-  // Initialize selectedDate: use stored date, or default to today
-  // If stored date is in the past, reset to today
+  // Erste wählbare Buchung; gespeicherter Tag nur wenn gültig und nicht in der Vergangenheit
   const getInitialDate = (): Date => {
     const today = startOfDay(new Date());
+
+    const firstSelectableFrom = (anchor: Date) => {
+      for (let i = 0; i < 28; i++) {
+        const cand = startOfDay(addDays(anchor, i));
+        if (
+          isBookingDaySelectable(cand, selectedPlan) &&
+          !isBefore(cand, today)
+        ) {
+          return cand;
+        }
+      }
+      return startOfDay(today);
+    };
+
     if (dateTime?.date) {
       const storedDate =
         dateTime.date instanceof Date ? dateTime.date : new Date(dateTime.date);
-      // If stored date is in the past, use today instead
-      if (isBefore(startOfDay(storedDate), today)) {
-        return new Date();
+      const day = startOfDay(storedDate);
+      if (
+        !isBefore(day, today) &&
+        isBookingDaySelectable(day, selectedPlan)
+      ) {
+        return storedDate;
       }
-      return storedDate;
     }
-    return new Date(); // Default to today
+
+    return firstSelectableFrom(today);
   };
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     getInitialDate()
   );
-  const [selectedTime, setSelectedTime] = useState<string | undefined>(
-    dateTime?.timeSlot
-  );
+
+  const [selectedTime, setSelectedTime] = useState<string | undefined>(() => {
+    if (!dateTime?.date || !dateTime?.timeSlot) return undefined;
+    const plan = pkg?.selectedPlan ?? "basic";
+    const d =
+      dateTime.date instanceof Date ? dateTime.date : new Date(dateTime.date);
+    const expected = getExpectedBookingTimeSlots(startOfDay(d), plan);
+    return expected.some((s) => s === dateTime.timeSlot)
+      ? dateTime.timeSlot
+      : undefined;
+  });
 
   // Initialize weekStart to the week containing the selected date (or today)
   const getInitialWeekStart = (): Date => {
@@ -83,6 +112,15 @@ export default function DateTimeStep() {
     }
   }, [isStepComplete, router]);
 
+  /** Paketwechsel (z. B. Basic → Exklusiv): ungültiges Datum (z. B. Sa) zurücksetzen */
+  useEffect(() => {
+    setSelectedDate((prev) =>
+      prev && !isBookingDaySelectable(prev, selectedPlan)
+        ? undefined
+        : prev
+    );
+  }, [selectedPlan]);
+
   useEffect(() => {
     if (selectedDate) {
       setValue("date", selectedDate);
@@ -98,39 +136,68 @@ export default function DateTimeStep() {
     }
   }, [selectedTime, setValue]);
 
+  useEffect(() => {
+    if (!selectedTime || availableSlots.length === 0) return;
+    const stillOk = availableSlots.some(
+      (s) => s.time === selectedTime && s.available
+    );
+    if (!stillOk) setSelectedTime(undefined);
+  }, [availableSlots, selectedTime]);
+
   // Fetch available time slots when date is selected
   useEffect(() => {
     if (selectedDate) {
       setLoadingSlots(true);
-      getAvailableTimeSlots(selectedDate)
+      const localExpected = getExpectedBookingTimeSlots(
+        selectedDate,
+        selectedPlan
+      );
+
+      getAvailableTimeSlots(selectedDate, selectedPlan)
         .then((slots) => {
-          // Ensure we always have slots to display
-          if (slots.length > 0) {
+          if (localExpected.length === 0) {
+            setAvailableSlots([]);
+          } else if (slots.length > 0) {
             setAvailableSlots(slots);
           } else {
-            // Fallback to default slots if empty
             setAvailableSlots(
-              defaultTimeSlots.map((time) => ({ time, available: true }))
+              localExpected.map((time) => ({ time, available: true }))
             );
           }
           setLoadingSlots(false);
         })
         .catch((error) => {
           console.error("Error fetching time slots:", error);
-          // Fallback to all slots as available
-          setAvailableSlots(
-            defaultTimeSlots.map((time) => ({ time, available: true }))
-          );
+          if (localExpected.length === 0) {
+            setAvailableSlots([]);
+          } else {
+            setAvailableSlots(
+              localExpected.map((time) => ({ time, available: true }))
+            );
+          }
           setLoadingSlots(false);
         });
     } else {
-      // When no date is selected, show default slots as available
-      // This allows users to see what slots are available before selecting a date
+      const preview =
+        selectedPlan === "exclusive"
+          ? [BOOKING_SLOT_EXCLUSIVE_WEEKDAY]
+          : [...BOOKING_SLOTS_WEEKDAY];
       setAvailableSlots(
-        defaultTimeSlots.map((time) => ({ time, available: false }))
+        preview.map((time) => ({
+          time,
+          available: false,
+        }))
       );
     }
-  }, [selectedDate]);
+  }, [selectedDate, selectedPlan]);
+
+  useEffect(() => {
+    if (loadingSlots || !selectedDate) return;
+    const free = availableSlots.filter((s) => s.available);
+    if (free.length !== 1) return;
+    const only = free[0].time;
+    setSelectedTime((t) => (t === only ? t : only));
+  }, [loadingSlots, availableSlots, selectedDate]);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -194,6 +261,8 @@ export default function DateTimeStep() {
                   format(selectedDate, "yyyy-MM-dd") ===
                     format(day, "yyyy-MM-dd");
                 const isPast = isPastDate(day);
+                const closed = !isBookingDaySelectable(day, selectedPlan);
+                const disabledPick = isPast || closed;
                 const dayLabel = format(day, "EEE", { locale: de });
                 const dateLabel = format(day, "d");
 
@@ -201,13 +270,13 @@ export default function DateTimeStep() {
                   <button
                     key={day.toISOString()}
                     type="button"
-                    onClick={() => !isPast && setSelectedDate(day)}
-                    disabled={isPast}
+                    onClick={() => !disabledPick && setSelectedDate(day)}
+                    disabled={disabledPick}
                     className={cn(
                       "flex flex-col items-center px-4 py-2 rounded-lg border-2 transition-colors min-w-[60px]",
                       isSelected
                         ? "border-enex-primary bg-enex-primary text-white"
-                        : isPast
+                        : disabledPick
                           ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed opacity-50"
                           : "border-gray-200 hover:border-enex-primary"
                     )}
@@ -242,8 +311,21 @@ export default function DateTimeStep() {
           </label>
           {loadingSlots ? (
             <div className="text-center py-4 text-gray-500">Wird geladen…</div>
+          ) : selectedDate &&
+            getExpectedBookingTimeSlots(selectedDate, selectedPlan)
+              .length === 0 ? (
+            <div className="text-center py-4 text-gray-600 text-sm">
+              An diesem Tag ist keine Buchung möglich (geschlossen).
+            </div>
           ) : availableSlots.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div
+              className={cn(
+                "grid gap-3",
+                availableSlots.length === 1
+                  ? "grid-cols-1 max-w-sm"
+                  : "grid-cols-1 sm:grid-cols-2"
+              )}
+            >
               {availableSlots.map((slot) => {
                 const isSelected = selectedTime === slot.time;
                 const isDisabled = !slot.available || !selectedDate;

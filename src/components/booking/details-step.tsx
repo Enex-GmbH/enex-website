@@ -167,28 +167,6 @@ export default function DetailsStep() {
           />
         </div>
 
-        {/* Water & Electricity Availability */}
-        <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="hasWater" disabled className="w-4 h-4" />
-            <label htmlFor="hasWater" className="text-sm">
-              Wasseranschluss vorhanden
-            </label>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="hasElectricity"
-              disabled
-              className="w-4 h-4"
-            />
-            <label htmlFor="hasElectricity" className="text-sm">
-              Stromanschluss vorhanden
-            </label>
-          </div>
-        </div>
-
         {/* Navigation Buttons */}
         <div className="flex gap-4">
           <Button

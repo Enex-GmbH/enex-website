@@ -10,7 +10,7 @@ import { formatDateForDb } from "../booking-helpers";
 /**
  * Check if a specific time slot is available for booking
  * @param date - Date object for the booking
- * @param time - Time slot string (e.g., "09:30")
+ * @param time - Time slot id (e.g. "08:00-12:00", "13:00-17:00", "09:00-13:00", "08:00-16:00")
  * @returns Object with availability status
  */
 export async function checkAvailability(

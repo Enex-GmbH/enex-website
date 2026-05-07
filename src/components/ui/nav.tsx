@@ -37,8 +37,17 @@ export function Navigation() {
     return "ME";
   };
 
-  // Preise, Deckung, Firmenkunden: vorerst deaktiviert
-  const navItems: { href: string; label: string }[] = [];
+  type NavItem =
+    | { type: "link"; href: string; label: string }
+    | { type: "soon"; label: string };
+
+  const navItems: NavItem[] = [
+    { type: "link", href: "/warum-enex", label: "Warum Enex?" },
+    { type: "link", href: "/preise-pakete", label: "Preise & Pakete" },
+    { type: "link", href: "/standorte", label: "Unsere Standorte" },
+    { type: "soon", label: "Shop" },
+    { type: "soon", label: "Franchise" },
+  ];
 
   return (
     <>
@@ -48,16 +57,29 @@ export function Navigation() {
         </Link>
 
         {/* Middle: Nav items (desktop only) */}
-        <nav className="hidden md:flex gap-8">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-lg font-medium border-b-2 border-transparent hover:border-b-2 hover:border-black transition-colors"
-            >
-              {item.label}
-            </Link>
-          ))}
+        <nav className="hidden md:flex flex-wrap items-center gap-x-3 gap-y-1 lg:gap-x-4">
+          {navItems.map((item) =>
+            item.type === "soon" ? (
+              <span
+                key={item.label}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-400"
+                aria-label={`${item.label}: demnächst verfügbar`}
+              >
+                {item.label}
+                <span className="rounded-full border border-gray-200 bg-gray-50 px-1.5 py-px text-[8px] font-semibold uppercase leading-none tracking-wide text-gray-500">
+                  Demnächst
+                </span>
+              </span>
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="whitespace-nowrap border-b border-transparent text-sm font-medium text-gray-800 hover:border-black motion-safe:transition-colors"
+              >
+                {item.label}
+              </Link>
+            )
+          )}
         </nav>
 
         {/* Right: Auth buttons or Avatar + Mobile menu button */}
@@ -169,28 +191,41 @@ export function Navigation() {
       {open && (
         <div className="md:hidden border-t bg-white mt-2.5">
           <nav className="flex flex-col items-start gap-3 mt-3">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
-                onClick={() => setOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) =>
+              item.type === "soon" ? (
+                <span
+                  key={item.label}
+                  className="flex flex-wrap items-center gap-2 text-base font-medium text-gray-400"
+                  aria-label={`${item.label}: demnächst verfügbar`}
+                >
+                  {item.label}
+                  <span className="rounded-full border border-gray-200 bg-gray-50 px-1.5 py-px text-[8px] font-semibold uppercase leading-none tracking-wide text-gray-500">
+                    Demnächst
+                  </span>
+                </span>
+              ) : (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="block text-base font-medium text-gray-800 hover:text-black transition-colors"
+                  onClick={() => setOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              )
+            )}
             {!session && (
               <>
                 <Link
                   href="/login"
-                  className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
+                  className="block text-base font-medium text-gray-800 hover:text-black transition-colors"
                   onClick={() => setOpen(false)}
                 >
                   Anmelden
                 </Link>
                 <Link
                   href="/register"
-                  className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
+                  className="block text-base font-medium text-gray-800 hover:text-black transition-colors"
                   onClick={() => setOpen(false)}
                 >
                   Registrieren
@@ -201,14 +236,14 @@ export function Navigation() {
               <>
                 <Link
                   href="/account"
-                  className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
+                  className="block text-base font-medium text-gray-800 hover:text-black transition-colors"
                   onClick={() => setOpen(false)}
                 >
                   Buchungen
                 </Link>
                 <Link
                   href="/profile"
-                  className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
+                  className="block text-base font-medium text-gray-800 hover:text-black transition-colors"
                   onClick={() => setOpen(false)}
                 >
                   Profil
@@ -217,14 +252,14 @@ export function Navigation() {
                   <>
                     <Link
                       href="/admin/dashboard"
-                      className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
+                      className="block text-base font-medium text-gray-800 hover:text-black transition-colors"
                       onClick={() => setOpen(false)}
                     >
                       Verwaltung
                     </Link>
                     <Link
                       href="/admin/coupons"
-                      className="block text-lg font-medium text-gray-800 hover:text-black transition-colors"
+                      className="block text-base font-medium text-gray-800 hover:text-black transition-colors"
                       onClick={() => setOpen(false)}
                     >
                       Gutscheine

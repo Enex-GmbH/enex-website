@@ -1,8 +1,17 @@
-import Link from "next/link";
-import { Building2, Car, Check, Clock, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import type { LucideIcon } from "lucide-react";
+import { Car, CarFront, Check, Clock, Sparkles, Truck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PLANS_MARKETING } from "@/lib/data/plans-marketing";
+import {
+  PLANS_MARKETING,
+  type PlanVehicleClass,
+} from "@/lib/data/plans-marketing";
+
+const VEHICLE_ICONS: Record<PlanVehicleClass, LucideIcon> = {
+  kleinwagen: CarFront,
+  standard: Car,
+  suv: Truck,
+};
 
 /** Equal card height on large screens; long lists scroll inside. */
 const CARD_LG_HEIGHT = "lg:h-[min(88vh,52rem)]";
@@ -41,17 +50,24 @@ const Plans = () => {
                 <div
                   className={cn(
                     "relative flex h-32 shrink-0 items-center justify-center sm:h-36",
-                    "bg-gradient-to-b from-gray-100 to-gray-50/90"
+                    "overflow-hidden bg-gray-200"
                   )}
                 >
                   {plan.popular && (
-                    <span className="absolute right-3 top-3 rounded-full bg-black px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+                    <span className="absolute right-3 top-3 z-10 rounded-full bg-black px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
                       Beliebt
                     </span>
                   )}
-                  <Car
-                    className="h-12 w-12 text-gray-400 sm:h-14 sm:w-14"
-                    strokeWidth={1.25}
+                  <Image
+                    src={plan.imageSrc}
+                    alt=""
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 32vw"
+                    priority={plan.key === "basic"}
+                  />
+                  <div
+                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent"
                     aria-hidden
                   />
                 </div>
@@ -140,37 +156,50 @@ const Plans = () => {
                         />
                         <span>{plan.idealShort}</span>
                       </div>
-                      {plan.priceLine && (
-                        <p className="pt-1 text-base text-gray-900">
-                          {plan.priceLine
-                            .split(/(€\d+)/)
-                            .map((chunk, i) =>
-                              /^€\d+$/.test(chunk) ? (
-                                <span key={i} className="text-lg font-bold">
-                                  {chunk}
-                                </span>
-                              ) : (
-                                <span key={i}>{chunk}</span>
-                              )
-                            )}
-                        </p>
+                      {plan.priceTiers && plan.priceTiers.length > 0 && (
+                        <div className="pt-1">
+                          <ul className="flex flex-col gap-2.5">
+                            {plan.priceTiers.map((tier) => {
+                              const Icon = VEHICLE_ICONS[tier.vehicleClass];
+                              return (
+                                <li
+                                  key={`${plan.key}-${tier.vehicleClass}`}
+                                  className="flex items-center gap-3"
+                                >
+                                  <span
+                                    className={cn(
+                                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                                      plan.featuredVisual
+                                        ? "bg-gray-900 text-white"
+                                        : "bg-gray-100 text-gray-700"
+                                    )}
+                                    aria-hidden
+                                  >
+                                    <Icon
+                                      className="h-[1.15rem] w-[1.15rem]"
+                                      strokeWidth={1.75}
+                                    />
+                                  </span>
+                                  <div className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 sm:justify-start">
+                                    <span className="text-lg font-bold tabular-nums text-gray-900">
+                                      €{tier.priceEur}
+                                    </span>
+                                    <span className="text-sm text-gray-600">
+                                      {tier.label}
+                                    </span>
+                                  </div>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                          {plan.priceFootnote && (
+                            <p className="mt-2.5 text-xs text-gray-500">
+                              — {plan.priceFootnote}
+                            </p>
+                          )}
+                        </div>
                       )}
                     </div>
-
-                    {plan.isExclusive && (
-                      <Button
-                        className="w-full rounded-xl bg-gray-100 font-medium text-gray-900 hover:bg-gray-200"
-                        asChild
-                      >
-                        <Link href="/booking/location">
-                          <Building2 className="mr-2 h-4 w-4" aria-hidden />
-                          Corporate-Angebot anfordern
-                          <span className="ml-1" aria-hidden>
-                            ›
-                          </span>
-                        </Link>
-                      </Button>
-                    )}
                   </div>
                 </div>
               </article>

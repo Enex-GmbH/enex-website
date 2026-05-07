@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CreditCard, Tag } from "lucide-react";
 import { format } from "date-fns";
@@ -38,6 +39,7 @@ export default function PaymentStep() {
     contactDetails,
     payment,
     setPayment,
+    setCouponAdjustment,
     isStepComplete,
     getTotalPrice,
     resetBooking,
@@ -68,6 +70,10 @@ export default function PaymentStep() {
       router.push("/booking/details");
     }
   }, [isStepComplete, router]);
+
+  useEffect(() => {
+    return () => setCouponAdjustment(null);
+  }, [setCouponAdjustment]);
 
   const onSubmit = async (data: PaymentFormData) => {
     setIsSubmitting(true);
@@ -158,6 +164,10 @@ export default function PaymentStep() {
         // Convert discounted price back from cents to euros
         const discountedEur = result.discountedPrice / 100;
         setDiscountedPrice({ eur: discountedEur });
+        setCouponAdjustment({
+          discountCents: result.discount,
+          discountedTotalEur: discountedEur,
+        });
         // Update payment data with coupon code
         if (payment) {
           setPayment({
@@ -170,10 +180,12 @@ export default function PaymentStep() {
         setCouponApplied(false);
         setDiscount(0);
         setDiscountedPrice(null);
+        setCouponAdjustment(null);
       }
     } catch (error) {
       console.error("Error applying coupon:", error);
       alert("Der Gutscheincode konnte nicht angewendet werden");
+      setCouponAdjustment(null);
     } finally {
       setApplyingCoupon(false);
     }
@@ -297,38 +309,60 @@ export default function PaymentStep() {
 
         {/* Legal Checkboxes */}
         <div className="space-y-4 border rounded-lg p-4">
-          <div className="flex items-start gap-2">
+          <label
+            htmlFor="agreedToTerms"
+            className="flex cursor-pointer items-start gap-2 text-sm leading-relaxed"
+          >
             <input
               type="checkbox"
               id="agreedToTerms"
               {...register("agreedToTerms")}
-              className="w-4 h-4 mt-1"
+              className="w-4 h-4 mt-1 shrink-0"
             />
-            <label htmlFor="agreedToTerms" className="text-sm">
-              <span className={errors.agreedToTerms ? "text-red-500" : ""}>
-                Ich akzeptiere die AGB.
-              </span>
-            </label>
-          </div>
+            <span className={errors.agreedToTerms ? "text-red-500" : ""}>
+              Ich akzeptiere die{" "}
+              <Link
+                href="/agb"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-enex-primary underline decoration-gray-300 underline-offset-2 hover:decoration-enex-primary"
+                onClick={(e) => e.stopPropagation()}
+              >
+                AGB
+              </Link>
+              .
+            </span>
+          </label>
           {errors.agreedToTerms && (
             <p className="text-red-500 text-sm">
               {errors.agreedToTerms.message}
             </p>
           )}
 
-          <div className="flex items-start gap-2">
+          <label
+            htmlFor="agreedToPrivacy"
+            className="flex cursor-pointer items-start gap-2 text-sm leading-relaxed"
+          >
             <input
               type="checkbox"
               id="agreedToPrivacy"
               {...register("agreedToPrivacy")}
-              className="w-4 h-4 mt-1"
+              className="w-4 h-4 mt-1 shrink-0"
             />
-            <label htmlFor="agreedToPrivacy" className="text-sm">
-              <span className={errors.agreedToPrivacy ? "text-red-500" : ""}>
-                Ich habe die Datenschutzerklärung zur Kenntnis genommen.
-              </span>
-            </label>
-          </div>
+            <span className={errors.agreedToPrivacy ? "text-red-500" : ""}>
+              Ich habe die{" "}
+              <Link
+                href="/datenschutz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-enex-primary underline decoration-gray-300 underline-offset-2 hover:decoration-enex-primary"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Datenschutzerklärung
+              </Link>{" "}
+              zur Kenntnis genommen.
+            </span>
+          </label>
           {errors.agreedToPrivacy && (
             <p className="text-red-500 text-sm">
               {errors.agreedToPrivacy.message}

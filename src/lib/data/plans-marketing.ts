@@ -5,6 +5,15 @@
 
 export type MarketingPlanKey = "basic" | "premium" | "exclusive";
 
+/** Vehicle size band for marketing price rows (drives icon choice in UI). */
+export type PlanVehicleClass = "kleinwagen" | "standard" | "suv";
+
+export interface PlanPriceTier {
+  vehicleClass: PlanVehicleClass;
+  label: string;
+  priceEur: number;
+}
+
 export interface PlanMarketingSection {
   title: string;
   items: string[];
@@ -12,6 +21,8 @@ export interface PlanMarketingSection {
 
 export interface PlanMarketing {
   key: MarketingPlanKey;
+  /** Hero image path under /public */
+  imageSrc: string;
   title: string;
   subtitle: string;
   /** Optional intro callout (e.g. target audience) */
@@ -29,13 +40,16 @@ export interface PlanMarketing {
   forLabel: string;
   /** Meta row: short “Ideal für” without duplicating closing */
   idealShort: string;
-  /** Shown for basic & premium */
-  priceLine?: string;
+  /** Price by vehicle class (icons in UI) */
+  priceTiers?: PlanPriceTier[];
+  /** e.g. "Preisliste 2026" */
+  priceFootnote?: string;
 }
 
 export const PLANS_MARKETING: PlanMarketing[] = [
   {
     key: "basic",
+    imageSrc: "/images/plans/plan-basic.jpg",
     title: "Basis Paket",
     subtitle: "Ideal für den Alltag und regelmäßige Pflege.",
     callout:
@@ -59,11 +73,16 @@ export const PLANS_MARKETING: PlanMarketing[] = [
     duration: "Dauer: ~4 Stunden",
     forLabel: "Für: 1 Privatauto",
     idealShort: "Ideal für: regelmäßige Wartungsreinigung",
-    priceLine:
-      "€150 (Kleinwagen), €200 (Standardwagen), €250 (SUV) — Preisliste 2026",
+    priceTiers: [
+      { vehicleClass: "kleinwagen", label: "Kleinwagen", priceEur: 150 },
+      { vehicleClass: "standard", label: "Standardwagen", priceEur: 200 },
+      { vehicleClass: "suv", label: "SUV", priceEur: 250 },
+    ],
+    priceFootnote: "Preisliste 2026",
   },
   {
     key: "premium",
+    imageSrc: "/images/plans/plan-premium.jpg",
     title: "Premium Paket",
     subtitle: "Für Kunden, die mehr als nur Sauberkeit wollen.",
     sections: [
@@ -97,11 +116,16 @@ export const PLANS_MARKETING: PlanMarketing[] = [
     duration: "Dauer: ~4–5 Stunden",
     forLabel: "Für: 1 Auto",
     idealShort: "Ideal für: Innen- und Außenpflege in einem Paket",
-    priceLine:
-      "€280 (Kleinwagen), €330 (Standardwagen), €430 (SUV) — Preisliste 2026",
+    priceTiers: [
+      { vehicleClass: "kleinwagen", label: "Kleinwagen", priceEur: 280 },
+      { vehicleClass: "standard", label: "Standardwagen", priceEur: 330 },
+      { vehicleClass: "suv", label: "SUV", priceEur: 430 },
+    ],
+    priceFootnote: "Preisliste 2026",
   },
   {
     key: "exclusive",
+    imageSrc: "/images/plans/plan-exclusive.jpg",
     title: "Exclusive Paket",
     subtitle: "Für höchste Ansprüche und maximale Ergebnisse.",
     sections: [
@@ -160,7 +184,11 @@ export const PLANS_MARKETING: PlanMarketing[] = [
     duration: "Dauer: bis zu 8 Stunden oder nach Absprache",
     forLabel: "Für: höchste Ansprüche & Showroom-Ergebnis",
     idealShort: "Ideal für: maximale Aufbereitung innen und außen",
-    priceLine:
-      "€400 (Kleinwagen), €480 (Standardwagen), €580 (SUV) — Preisliste 2026",
+    priceTiers: [
+      { vehicleClass: "kleinwagen", label: "Kleinwagen", priceEur: 400 },
+      { vehicleClass: "standard", label: "Standardwagen", priceEur: 480 },
+      { vehicleClass: "suv", label: "SUV", priceEur: 580 },
+    ],
+    priceFootnote: "Preisliste 2026",
   },
 ];

@@ -7,9 +7,14 @@ const Footer = () => {
 
   const footerLinks = {
     // Preise, Deckung, Firmenkunden: vorerst keine Zielseiten
-    service: [{ href: "/booking/location", label: "Jetzt buchen" }],
+    service: [
+      { href: "/booking/location", label: "Jetzt buchen" },
+      { href: "/preise-pakete", label: "Preise & Pakete" },
+      { href: "/warum-enex", label: "Warum Enex?" },
+    ],
     legal: [
       { href: "/impressum", label: "Impressum" },
+      { href: "/agb", label: "AGB" },
       { href: "/datenschutz", label: "Datenschutz" },
     ],
   };
@@ -76,7 +81,7 @@ const Footer = () => {
               </li>
               <li className="flex items-start gap-2 text-sm">
                 <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                <span>Pforzheim & Karlsruhe</span>
+                <span>Pforzheim & Enzkreis</span>
               </li>
             </ul>
           </div>

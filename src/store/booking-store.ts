@@ -70,20 +70,36 @@ export interface PaymentData {
   agreedToService: boolean;
 }
 
+/** Zur Live-Anzeige in der Sidebar auf der Zahlungsseite; nicht persistiert. */
+export interface CouponAdjustment {
+  discountCents: number;
+  discountedTotalEur: number;
+}
+
 interface BookingState {
   // Step data
   location: LocationData | null;
   package: PackageData | null;
+  /** True only after submitting the Standort step (guards downstream routes vs. draft store updates). */
+  locationStepCommitted: boolean;
+  /** True only after submitting the Paket step. */
+  packageStepCommitted: boolean;
   dateTime: DateTimeData | null;
   contactDetails: ContactDetails | null;
   payment: PaymentData | null;
 
+  /** Rabatt nach erfolgreicher Gutschein-Validierung (nur payment step). */
+  couponAdjustment: CouponAdjustment | null;
+
   // Actions
   setLocation: (location: LocationData) => void;
+  finalizeLocationStep: (location: LocationData) => void;
   setPackage: (packageData: PackageData) => void;
+  finalizePackageStep: (packageData: PackageData) => void;
   setDateTime: (dateTime: DateTimeData) => void;
   setContactDetails: (details: ContactDetails) => void;
   setPayment: (payment: PaymentData) => void;
+  setCouponAdjustment: (adjustment: CouponAdjustment | null) => void;
 
   // Utility
   resetBooking: () => void;
@@ -94,9 +110,12 @@ interface BookingState {
 const initialState = {
   location: null,
   package: null,
+  locationStepCommitted: false,
+  packageStepCommitted: false,
   dateTime: null,
   contactDetails: null,
   payment: null,
+  couponAdjustment: null,
 };
 
 export const useBookingStore = create<BookingState>()(
@@ -106,13 +125,21 @@ export const useBookingStore = create<BookingState>()(
 
       setLocation: (location) => set({ location }),
 
+      finalizeLocationStep: (location) =>
+        set({ location, locationStepCommitted: true }),
+
       setPackage: (packageData) => set({ package: packageData }),
+
+      finalizePackageStep: (packageData) =>
+        set({ package: packageData, packageStepCommitted: true }),
 
       setDateTime: (dateTime) => set({ dateTime }),
 
       setContactDetails: (details) => set({ contactDetails: details }),
 
       setPayment: (payment) => set({ payment }),
+
+      setCouponAdjustment: (couponAdjustment) => set({ couponAdjustment }),
 
       resetBooking: () => set(initialState),
 
@@ -125,9 +152,9 @@ export const useBookingStore = create<BookingState>()(
         const state = get();
         switch (step) {
           case 1:
-            return state.location !== null;
+            return state.locationStepCommitted && state.location !== null;
           case 2:
-            return state.package !== null;
+            return state.packageStepCommitted && state.package !== null;
           case 3:
             return state.dateTime !== null;
           case 4:
@@ -144,14 +171,28 @@ export const useBookingStore = create<BookingState>()(
       partialize: (state) => ({
         location: state.location,
         package: state.package,
+        locationStepCommitted: state.locationStepCommitted,
+        packageStepCommitted: state.packageStepCommitted,
         dateTime: state.dateTime,
         // Omit contactDetails and payment from localStorage (PII / agreements)
       }),
       merge: (persistedState, currentState) => {
+        const raw = persistedState as Record<string, unknown>;
         const merged = {
           ...currentState,
-          ...(persistedState as object),
+          ...raw,
         };
+        /* Legacy payloads had no *_StepCommitted keys — infer completion from persisted data. */
+        if (!("locationStepCommitted" in raw)) {
+          const loc = merged.location as LocationData | null;
+          merged.locationStepCommitted =
+            loc !== null &&
+            typeof loc.postalCode === "string" &&
+            loc.postalCode.trim().length >= 5;
+        }
+        if (!("packageStepCommitted" in raw)) {
+          merged.packageStepCommitted = merged.package !== null;
+        }
         if (merged.package?.carType != null) {
           merged.package = {
             ...merged.package,

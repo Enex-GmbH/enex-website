@@ -5,7 +5,6 @@ export interface PostalCode {
 }
 
 export const postalCodes: PostalCode[] = [
-  // Pforzheim
   { code: "75172", city: "Pforzheim" },
   { code: "75173", city: "Pforzheim" },
   { code: "75175", city: "Pforzheim" },
@@ -13,26 +12,22 @@ export const postalCodes: PostalCode[] = [
   { code: "75179", city: "Pforzheim" },
   { code: "75180", city: "Pforzheim" },
   { code: "75181", city: "Pforzheim" },
-  { code: "75217", city: "Pforzheim" },
-  { code: "75223", city: "Pforzheim" },
-  { code: "75210", city: "Pforzheim" },
-  { code: "75196", city: "Pforzheim" },
-  
-  // Karlsruhe
-  { code: "76131", city: "Karlsruhe" },
-  { code: "76133", city: "Karlsruhe" },
-  { code: "76135", city: "Karlsruhe" },
-  { code: "76137", city: "Karlsruhe" },
-  { code: "76139", city: "Karlsruhe" },
-  { code: "76149", city: "Karlsruhe" },
-  { code: "76185", city: "Karlsruhe" },
-  { code: "76187", city: "Karlsruhe" },
-  { code: "76189", city: "Karlsruhe" },
-  { code: "76227", city: "Karlsruhe" },
-  { code: "76228", city: "Karlsruhe" },
-  { code: "76327", city: "Karlsruhe" },
-  { code: "76307", city: "Karlsruhe" },
+  { code: "75210", city: "Keltern" },
+  { code: "75223", city: "Niefern-Öschelbronn" },
+  { code: "75228", city: "Ispringen" },
+  { code: "75233", city: "Remchingen" },
+  { code: "75236", city: "Kämpfelbach" },
+  { code: "75239", city: "Pfinztal" },
+  { code: "75248", city: "Ötisheim" },
+  { code: "75249", city: "Kieselbronn" },
+  { code: "75417", city: "Maulbronn" },
+  { code: "75443", city: "Östringen" },
 ];
+
+/** PLZ liegt im Kern-Einzugsgebiet (ohne Anfahrtszuschlag). */
+export function isInsideServiceZone(postalCode: string): boolean {
+  return postalCodes.some((pc) => pc.code === postalCode);
+}
 
 // Helper function to search postal codes
 export function searchPostalCodes(query: string): PostalCode[] {
@@ -41,7 +36,7 @@ export function searchPostalCodes(query: string): PostalCode[] {
   }
 
   const lowerQuery = query.toLowerCase().trim();
-  
+
   return postalCodes.filter(
     (pc) =>
       pc.code.includes(lowerQuery) ||

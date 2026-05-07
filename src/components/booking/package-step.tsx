@@ -52,7 +52,8 @@ function normalizeCatalogAddOns(addOns: AddOn[] | undefined): AddOn[] {
 
 export default function PackageStep() {
   const router = useRouter();
-  const { package: pkg, setPackage, isStepComplete } = useBookingStore();
+  const { package: pkg, setPackage, finalizePackageStep, isStepComplete } =
+    useBookingStore();
   const [selectedAddOns, setSelectedAddOns] = useState<AddOn[]>(() =>
     normalizeCatalogAddOns(pkg?.addOns)
   );
@@ -85,6 +86,14 @@ export default function PackageStep() {
   );
 
   useEffect(() => {
+    setPackage({
+      carType: effectiveCarType,
+      selectedPlan: selectedPlan ?? "basic",
+      addOns: selectedAddOns,
+    });
+  }, [effectiveCarType, selectedPlan, selectedAddOns, setPackage]);
+
+  useEffect(() => {
     setValue("addOns", selectedAddOns);
   }, [selectedAddOns, setValue]);
 
@@ -113,7 +122,7 @@ export default function PackageStep() {
   };
 
   const onSubmit = (data: PackageFormData) => {
-    setPackage({
+    finalizePackageStep({
       ...data,
       addOns: data.addOns ?? selectedAddOns,
     });

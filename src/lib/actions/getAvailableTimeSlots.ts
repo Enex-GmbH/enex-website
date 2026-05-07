@@ -6,6 +6,8 @@ import { eq, and } from "drizzle-orm";
 import { resolveFranchiseId } from "../franchise";
 import { headers } from "next/headers";
 import { formatDateForDb } from "../booking-helpers";
+import type { PlanType } from "@/store/booking-store";
+import { getExpectedBookingTimeSlots } from "../booking-time-slots";
 
 /**
  * Get all available time slots for a specific date
@@ -13,13 +15,17 @@ import { formatDateForDb } from "../booking-helpers";
  * @returns Array of available time slot strings
  */
 export async function getAvailableTimeSlots(
-  date: Date
+  date: Date,
+  plan: PlanType = "basic"
 ): Promise<{ time: string; available: boolean }[]> {
   try {
     const headersList = await headers();
     const franchiseId = await resolveFranchiseId(headersList);
 
-    const defaultTimeSlots = ["09:30", "11:00", "13:00", "15:00", "17:00"];
+    const expectedSlots = getExpectedBookingTimeSlots(date, plan);
+    if (expectedSlots.length === 0) {
+      return [];
+    }
 
     const dateStr = formatDateForDb(date);
 
@@ -33,7 +39,7 @@ export async function getAvailableTimeSlots(
 
     // If no slots exist in DB, return all default slots as available
     if (slots.length === 0) {
-      return defaultTimeSlots.map((time) => ({
+      return expectedSlots.map((time) => ({
         time,
         available: true,
       }));
@@ -51,15 +57,18 @@ export async function getAvailableTimeSlots(
     );
 
     // Return all default slots with their availability status
-    return defaultTimeSlots.map((time) => ({
+    return expectedSlots.map((time) => ({
       time,
       available: slotMap.get(time) ?? true, // Default to available if not in DB
     }));
   } catch (error) {
     console.error("Error getting available time slots:", error);
     // Return default slots as available on error
-    const defaultTimeSlots = ["09:30", "11:00", "13:00", "15:00", "17:00"];
-    return defaultTimeSlots.map((time) => ({
+    const expectedSlots = getExpectedBookingTimeSlots(date, plan);
+    if (expectedSlots.length === 0) {
+      return [];
+    }
+    return expectedSlots.map((time) => ({
       time,
       available: true,
     }));
@@ -74,7 +83,8 @@ export async function getAvailableTimeSlots(
  */
 export async function getAvailableTimeSlotsForRange(
   startDate: Date,
-  endDate: Date
+  endDate: Date,
+  plan: PlanType = "basic"
 ): Promise<Record<string, { time: string; available: boolean }[]>> {
   try {
     const headersList = await headers();
@@ -86,7 +96,7 @@ export async function getAvailableTimeSlotsForRange(
     // Iterate through each date in the range
     while (currentDate <= endDate) {
       const dateStr = formatDateForDb(currentDate);
-      const slots = await getAvailableTimeSlots(currentDate);
+      const slots = await getAvailableTimeSlots(currentDate, plan);
       result[dateStr] = slots;
       currentDate.setDate(currentDate.getDate() + 1);
     }

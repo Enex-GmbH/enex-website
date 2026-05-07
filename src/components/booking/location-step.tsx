@@ -11,14 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PostalCodeSelect } from "@/components/ui/postal-code-select";
+import { isInsideServiceZone } from "@/lib/data/postal-codes";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export default function LocationStep() {
   const router = useRouter();
-  const { location, setLocation } = useBookingStore();
-  const [tollFeeEur, setTollFeeEur] = useState(0);
-
+  const { location, setLocation, finalizeLocationStep } = useBookingStore();
   const {
     register,
     handleSubmit,
@@ -37,35 +36,41 @@ export default function LocationStep() {
   });
 
   const postalCode = watch("postalCode");
+  const address = watch("address");
   const zone = watch("zone");
+  const hasWater = watch("hasWater");
+  const hasElectricity = watch("hasElectricity");
 
-  // Calculate toll fee based on zone
+  // Keep sidebar / pricing in sync before "Weiter".
   useEffect(() => {
-    if (zone === "outside") {
-      setTollFeeEur(9);
-    } else {
-      setTollFeeEur(0);
-    }
-  }, [zone]);
+    const fee = zone === "outside" ? 9 : 0;
+    setLocation({
+      postalCode: postalCode ?? "",
+      address: address ?? "",
+      zone: zone ?? "inside",
+      tollFeeEur: fee,
+      hasWater: !!hasWater,
+      hasElectricity: !!hasElectricity,
+    });
+  }, [
+    postalCode,
+    address,
+    zone,
+    hasWater,
+    hasElectricity,
+    setLocation,
+  ]);
 
-  // Determine zone based on postal code
-  // Pforzheim and Karlsruhe postal codes are inside the service zone
+  // Determine zone based on postal code (nur gebuchte PLZ-Liste = ohne Zuschlag)
   useEffect(() => {
     if (postalCode && postalCode.length >= 5) {
-      // Check if postal code is in supported cities (Pforzheim or Karlsruhe)
-      const pforzheimCodes = ["75172", "75173", "75175", "75177", "75179", "75180", "75181", "75217", "75223", "75210", "75196"];
-      const karlsruheCodes = ["76131", "76133", "76135", "76137", "76139", "76149", "76185", "76187", "76189", "76227", "76228", "76327", "76307"];
-      
-      if (pforzheimCodes.includes(postalCode) || karlsruheCodes.includes(postalCode)) {
-        setValue("zone", "inside");
-      } else {
-        setValue("zone", "outside");
-      }
+      setValue("zone", isInsideServiceZone(postalCode) ? "inside" : "outside");
     }
   }, [postalCode, setValue]);
 
   const onSubmit = (data: LocationFormData) => {
-    setLocation({
+    const tollFeeEur = data.zone === "outside" ? 9 : 0;
+    finalizeLocationStep({
       ...data,
       address: data.address ?? "",
       tollFeeEur,

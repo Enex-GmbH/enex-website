@@ -24,7 +24,15 @@ import {
 } from "@/store/booking-store";
 import { getFullyBookedDates } from "@/lib/actions/getFullyBookedDates";
 import { cn } from "@/lib/utils";
+import { isInsideServiceZone } from "@/lib/data/postal-codes";
 import { motion } from "motion/react";
+import {
+  BOOKING_SLOTS_WEEKDAY,
+  BOOKING_SLOT_EXCLUSIVE_WEEKDAY,
+  getDefaultBookingTimeSlotForDate,
+  getExpectedBookingTimeSlots,
+  isBookingDaySelectable,
+} from "@/lib/booking-time-slots";
 
 const HeroBlob = () => {
   return (
@@ -40,14 +48,8 @@ const HeroBlob = () => {
 
 function Hero() {
   const router = useRouter();
-  const {
-    setPackage,
-    setDateTime,
-    setLocation,
-    location,
-    package: pkg,
-    dateTime,
-  } = useBookingStore();
+  const { setDateTime, location, package: pkg, dateTime } = useBookingStore();
+  const heroPlan = pkg?.selectedPlan ?? "basic";
 
   // Initialize date from store if available
   const getInitialDate = (): Date | undefined => {
@@ -115,7 +117,7 @@ function Hero() {
 
     let cancelled = false;
     setIsLoadingBookedDates(true);
-    getFullyBookedDates(startDate, endDate)
+    getFullyBookedDates(startDate, endDate, heroPlan)
       .then((bookedDates) => {
         if (!cancelled) {
           setFullyBookedDates(bookedDates);
@@ -133,7 +135,7 @@ function Hero() {
     return () => {
       cancelled = true;
     };
-  }, [isCalendarOpen, calendarMonth]);
+  }, [isCalendarOpen, calendarMonth, heroPlan]);
 
   // Function to check if a date is disabled (fully booked or in the past)
   // Use useCallback to ensure the function reference is stable and reactive
@@ -149,42 +151,48 @@ function Hero() {
         return true;
       }
 
+      if (!isBookingDaySelectable(checkDate, heroPlan)) {
+        return true;
+      }
+
       // Disable fully booked dates
       const dateStr = format(date, "yyyy-MM-dd");
       return fullyBookedDates.includes(dateStr);
     },
-    [fullyBookedDates]
+    [fullyBookedDates, heroPlan]
   );
 
   const handleSearch = () => {
-    // Pre-fill postal code in location store if provided
-    // (Car type and date are already saved immediately when selected)
-    if (postalCode && postalCode.length >= 5) {
-      // Determine zone based on postal code
-      // Pforzheim and Karlsruhe postal codes are inside the service zone
-      const pforzheimCodes = ["75172", "75173", "75175", "75177", "75179", "75180", "75181", "75217", "75223", "75210", "75196"];
-      const karlsruheCodes = ["76131", "76133", "76135", "76137", "76139", "76149", "76185", "76187", "76189", "76227", "76228", "76327", "76307"];
+    // Pre-fill store as draft; reset wizard commit flags like the Buchung-Schritte.
+    useBookingStore.setState(() => {
+      const base = {
+        package: {
+          carType,
+          selectedPlan: pkg?.selectedPlan ?? "basic",
+          addOns: pkg?.addOns ?? [],
+        },
+        packageStepCommitted: false,
+      } as const;
 
-      const zone = (pforzheimCodes.includes(postalCode) || karlsruheCodes.includes(postalCode)) ? "inside" : "outside";
-      const tollFeeEur = zone === "outside" ? 9 : 0;
+      if (postalCode && postalCode.length >= 5) {
+        const zone = isInsideServiceZone(postalCode) ? "inside" : "outside";
+        return {
+          ...base,
+          location: {
+            postalCode,
+            address: "",
+            zone,
+            tollFeeEur: zone === "outside" ? 9 : 0,
+            hasWater: location?.hasWater || false,
+            hasElectricity: location?.hasElectricity || false,
+          },
+          locationStepCommitted: false,
+        };
+      }
 
-      setLocation({
-        postalCode: postalCode,
-        address: "", // Will be filled in location step
-        zone: zone,
-        tollFeeEur: tollFeeEur,
-        hasWater: location?.hasWater || false,
-        hasElectricity: location?.hasElectricity || false,
-      });
-    }
-
-    setPackage({
-      carType,
-      selectedPlan: pkg?.selectedPlan ?? "basic",
-      addOns: pkg?.addOns ?? [],
+      return base;
     });
 
-    // Navigate to booking flow
     router.push("/booking/location");
   };
 
@@ -269,10 +277,13 @@ function Hero() {
                   onValueChange={(value) => {
                     const v = value as CarType;
                     setCarType(v);
-                    setPackage({
-                      carType: v,
-                      selectedPlan: pkg?.selectedPlan || "basic",
-                      addOns: pkg?.addOns || [],
+                    useBookingStore.setState({
+                      package: {
+                        carType: v,
+                        selectedPlan: pkg?.selectedPlan || "basic",
+                        addOns: pkg?.addOns || [],
+                      },
+                      packageStepCommitted: false,
                     });
                   }}
                 >
@@ -322,9 +333,26 @@ function Hero() {
                             !isDateDisabled(selectedDate)
                           ) {
                             setDate(selectedDate);
+                            const slotsForDay = getExpectedBookingTimeSlots(
+                              selectedDate,
+                              heroPlan
+                            );
+                            const prior = dateTime?.timeSlot;
+                            const usePrior =
+                              !!prior &&
+                              slotsForDay.some((s) => s === prior);
                             setDateTime({
                               date: selectedDate,
-                              timeSlot: dateTime?.timeSlot || "09:30",
+                              timeSlot:
+                                usePrior
+                                  ? prior
+                                  : getDefaultBookingTimeSlotForDate(
+                                      selectedDate,
+                                      heroPlan
+                                    ) ??
+                                    (heroPlan === "exclusive"
+                                      ? BOOKING_SLOT_EXCLUSIVE_WEEKDAY
+                                      : BOOKING_SLOTS_WEEKDAY[0]),
                             });
                             setIsCalendarOpen(false);
                           }
