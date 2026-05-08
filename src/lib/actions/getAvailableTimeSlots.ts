@@ -7,7 +7,10 @@ import { resolveFranchiseId } from "../franchise";
 import { headers } from "next/headers";
 import { formatDateForDb } from "../booking-helpers";
 import type { PlanType } from "@/store/booking-store";
-import { getExpectedBookingTimeSlots } from "../booking-time-slots";
+import {
+  filterSlotsEligibleForBookingDay,
+  getExpectedBookingTimeSlots,
+} from "../booking-time-slots";
 
 /**
  * Get all available time slots for a specific date
@@ -39,10 +42,10 @@ export async function getAvailableTimeSlots(
 
     // If no slots exist in DB, return all default slots as available
     if (slots.length === 0) {
-      return expectedSlots.map((time) => ({
-        time,
-        available: true,
-      }));
+      return filterSlotsEligibleForBookingDay(
+        expectedSlots.map((time) => ({ time, available: true })),
+        date
+      );
     }
 
     // Map existing slots to availability
@@ -57,10 +60,11 @@ export async function getAvailableTimeSlots(
     );
 
     // Return all default slots with their availability status
-    return expectedSlots.map((time) => ({
+    const merged = expectedSlots.map((time) => ({
       time,
       available: slotMap.get(time) ?? true, // Default to available if not in DB
     }));
+    return filterSlotsEligibleForBookingDay(merged, date);
   } catch (error) {
     console.error("Error getting available time slots:", error);
     // Return default slots as available on error
@@ -68,10 +72,10 @@ export async function getAvailableTimeSlots(
     if (expectedSlots.length === 0) {
       return [];
     }
-    return expectedSlots.map((time) => ({
-      time,
-      available: true,
-    }));
+    return filterSlotsEligibleForBookingDay(
+      expectedSlots.map((time) => ({ time, available: true })),
+      date
+    );
   }
 }
 

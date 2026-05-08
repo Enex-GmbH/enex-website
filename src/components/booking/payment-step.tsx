@@ -406,7 +406,7 @@ export default function PaymentStep() {
             disabled={isSubmitting}
             className="flex-1 bg-enex-primary hover:bg-enex-hover text-white disabled:opacity-50"
           >
-            {isSubmitting ? "Wird verarbeitet…" : "Zahlung abschließen"}
+            {isSubmitting ? "Wird verarbeitet…" : "Buchung bestätigen"}
           </Button>
         </div>
       </form>

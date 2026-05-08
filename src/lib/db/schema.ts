@@ -76,9 +76,9 @@ export const bookings = pgTable("bookings", {
   plan: varchar("plan", { length: 20 }).notNull(),
   addons: jsonb("addons").$type<AddOn[]>().default([]), // full AddOn objects
 
-  // DateTime
+  // DateTime (slot keys e.g. "08:00-12:00" = 11 chars; varchar(10) overflows)
   date: varchar("date", { length: 20 }).notNull(),
-  time: varchar("time", { length: 10 }).notNull(),
+  time: varchar("time", { length: 24 }).notNull(),
 
   // Customer
   customerFirstName: varchar("customer_first_name", { length: 80 }).notNull(),
@@ -136,7 +136,7 @@ export const timeSlots = pgTable("time_slots", {
     .notNull()
     .references(() => franchises.id),
   date: varchar("date", { length: 20 }).notNull(),
-  time: varchar("time", { length: 10 }).notNull(),
+  time: varchar("time", { length: 24 }).notNull(),
   isBooked: boolean("is_booked").default(false),
   bookingId: integer("booking_id").references(() => bookings.id),
 });

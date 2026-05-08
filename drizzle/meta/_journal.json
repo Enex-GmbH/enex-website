@@ -92,6 +92,13 @@
       "when": 1776970400000,
       "tag": "0012_seed_default_franchise",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1778224709257,
+      "tag": "0013_sticky_pixie",
+      "breakpoints": true
     }
   ]
 }

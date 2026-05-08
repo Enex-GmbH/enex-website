@@ -19,8 +19,10 @@ import { getAvailableTimeSlots } from "@/lib/actions/getAvailableTimeSlots";
 import {
   BOOKING_SLOTS_WEEKDAY,
   BOOKING_SLOT_EXCLUSIVE_WEEKDAY,
+  filterSlotsEligibleForBookingDay,
   getExpectedBookingTimeSlots,
   isBookingDaySelectable,
+  isSameBookingCalendarDay,
 } from "@/lib/booking-time-slots";
 
 export default function DateTimeStep() {
@@ -158,10 +160,15 @@ export default function DateTimeStep() {
           if (localExpected.length === 0) {
             setAvailableSlots([]);
           } else if (slots.length > 0) {
-            setAvailableSlots(slots);
+            setAvailableSlots(
+              filterSlotsEligibleForBookingDay(slots, selectedDate)
+            );
           } else {
             setAvailableSlots(
-              localExpected.map((time) => ({ time, available: true }))
+              filterSlotsEligibleForBookingDay(
+                localExpected.map((time) => ({ time, available: true })),
+                selectedDate
+              )
             );
           }
           setLoadingSlots(false);
@@ -172,7 +179,10 @@ export default function DateTimeStep() {
             setAvailableSlots([]);
           } else {
             setAvailableSlots(
-              localExpected.map((time) => ({ time, available: true }))
+              filterSlotsEligibleForBookingDay(
+                localExpected.map((time) => ({ time, available: true })),
+                selectedDate
+              )
             );
           }
           setLoadingSlots(false);
@@ -235,6 +245,25 @@ export default function DateTimeStep() {
     setDateTime(dateTimeData);
     router.push("/booking/details");
   };
+
+  const expectedSlotsForPicker = selectedDate
+    ? getExpectedBookingTimeSlots(selectedDate, selectedPlan)
+    : [];
+
+  const hasAnySameDaySlotNotYetStarted =
+    !!selectedDate &&
+    expectedSlotsForPicker.length > 0 &&
+    filterSlotsEligibleForBookingDay(
+      expectedSlotsForPicker.map((time) => ({ time, available: true })),
+      selectedDate
+    ).length > 0;
+
+  const allSameDaySlotsHaveStarted =
+    !!selectedDate &&
+    expectedSlotsForPicker.length > 0 &&
+    !hasAnySameDaySlotNotYetStarted &&
+    !loadingSlots &&
+    isSameBookingCalendarDay(selectedDate, new Date());
 
   return (
     <Card className="p-6">
@@ -311,11 +340,14 @@ export default function DateTimeStep() {
           </label>
           {loadingSlots ? (
             <div className="text-center py-4 text-gray-500">Wird geladen…</div>
-          ) : selectedDate &&
-            getExpectedBookingTimeSlots(selectedDate, selectedPlan)
-              .length === 0 ? (
+          ) : selectedDate && expectedSlotsForPicker.length === 0 ? (
             <div className="text-center py-4 text-gray-600 text-sm">
               An diesem Tag ist keine Buchung möglich (geschlossen).
+            </div>
+          ) : allSameDaySlotsHaveStarted ? (
+            <div className="text-center py-4 text-gray-700 text-sm leading-relaxed">
+              Für den heutigen Tag beginnen keine Zeitfenster mehr in der Zukunft.
+              Bitte wählen Sie einen anderen Buchungstag.
             </div>
           ) : availableSlots.length > 0 ? (
             <div

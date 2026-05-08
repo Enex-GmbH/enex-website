@@ -14,10 +14,11 @@ import { resolveFranchiseId } from "../franchise";
 import { headers } from "next/headers";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
 import {
+  getBookingSubtotalCentsFromStore,
   transformBookingStoreToDb,
   generateBookingReference,
-  getBookingSubtotalCentsFromStore,
 } from "../booking-helpers";
+import { isBookingSlotEligibleForInstantBooking } from "../booking-time-slots";
 import {
   computeDiscountCents,
   normalizeCouponCode,
@@ -154,6 +155,25 @@ export async function createBooking(storeData: {
       return {
         success: false,
         message: "Missing required booking information",
+      };
+    }
+
+    const bookingDateForSlot =
+      storeData.dateTime.date instanceof Date
+        ? storeData.dateTime.date
+        : new Date(storeData.dateTime.date);
+
+    if (
+      !isBookingSlotEligibleForInstantBooking(
+        storeData.dateTime.timeSlot,
+        bookingDateForSlot,
+        new Date()
+      )
+    ) {
+      return {
+        success: false,
+        message:
+          "Dieser Zeitrahmen ist für heute nicht mehr buchbar. Bitte wählen Sie eine andere Uhrzeit oder einen anderen Tag.",
       };
     }
 

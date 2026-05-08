@@ -188,7 +188,7 @@ export default function PackageStep() {
                     <h3 className="font-bold text-lg">
                       {plan.key === "basicPlan" && "Basis-Paket"}
                       {plan.key === "premiumPlan" && "Premium-Paket"}
-                      {plan.key === "exclusivePlan" && "Exklusiv-Paket"}
+                      {plan.key === "exclusivePlan" && "Exclusive-Paket"}
                     </h3>
                     {selectedPlan === plan.id && (
                       <CheckCircle2 className="w-5 h-5 text-enex-primary shrink-0" />
