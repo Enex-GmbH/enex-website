@@ -32,20 +32,39 @@ export function ShowcaseCarousel({
         className,
       )}
     >
-      <Image
-        key={active.id}
-        src={active.image}
-        alt={`${active.tag}: ${active.title}`}
-        fill
-        sizes="(max-width: 768px) 100vw, min(1100px, 100vw)"
-        priority={isFirst}
-        loading={isFirst ? "eager" : "lazy"}
-        quality={82}
-        className="pointer-events-none object-cover transition-opacity duration-500 ease-out"
-      />
+      {/* Blurred full-bleed background (covers letterboxing from object-contain) */}
+      <div className="pointer-events-none absolute inset-0 z-0" aria-hidden>
+        <Image
+          key={`${active.id}-bg`}
+          src={active.image}
+          alt=""
+          fill
+          sizes="(max-width: 768px) 100vw, min(1100px, 100vw)"
+          priority={isFirst}
+          loading="eager"
+          fetchPriority={isFirst ? "high" : "auto"}
+          quality={55}
+          className="object-cover object-center scale-110 brightness-95 saturate-[1.06] blur-3xl"
+        />
+      </div>
+
+      <div className="pointer-events-none absolute inset-0 z-[1]">
+        <Image
+          key={active.id}
+          src={active.image}
+          alt={`${active.tag}: ${active.title}`}
+          fill
+          sizes="(max-width: 768px) 100vw, min(1100px, 100vw)"
+          priority={isFirst}
+          loading="eager"
+          fetchPriority="high"
+          quality={82}
+          className="object-contain object-center"
+        />
+      </div>
 
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent"
+        className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black/75 via-black/25 to-transparent"
         aria-hidden
       />
 
@@ -58,11 +77,8 @@ export function ShowcaseCarousel({
           <span className="inline-flex w-fit rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
             {active.tag}
           </span>
-          <p className="flex items-start gap-2 text-xl font-bold text-white md:text-2xl">
-            <span className="shrink-0 select-none opacity-95" aria-hidden>
-              ✨
-            </span>
-            <span>{active.title}</span>
+          <p className="text-xl font-bold text-white md:text-2xl">
+            {active.title}
           </p>
         </div>
       </div>

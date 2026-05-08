@@ -39,14 +39,11 @@ export function Showcase({ items }: ShowcaseProps) {
   }, [pauseAutoplay, count, goNext]);
 
   useEffect(() => {
-    if (count <= 1) return;
-    const preload = (url: string) => {
+    for (const item of items) {
       const img = new window.Image();
-      img.src = url;
-    };
-    preload(items[(index + 1) % count].image);
-    preload(items[(index - 1 + count) % count].image);
-  }, [count, index, items]);
+      img.src = item.image;
+    }
+  }, [items]);
 
   const onTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.targetTouches[0]?.clientX ?? null;
