@@ -4,22 +4,56 @@ import { de } from "date-fns/locale";
 import type { bookings } from "@/lib/db/schema";
 import type { AddOn } from "@/store/booking-store";
 import { buildWebcalCalendarUrl } from "@/lib/calendar-ics-token";
+import {
+  getBookingSlotWindowEnd,
+  getBookingSlotWindowStart,
+} from "@/lib/booking-time-slots";
 
 type Booking = typeof bookings.$inferSelect;
+
+/**
+ * Stored `time` is a slot key (e.g. "09:00-13:00"), not a single clock time.
+ * Uses window start/end for calendar events; falls back for legacy "HH:mm" values.
+ */
+function getBookingCalendarBounds(booking: Booking): { start: Date; end: Date } {
+  const day = parse(booking.date, "yyyy-MM-dd", new Date());
+  const fromRangeStart = getBookingSlotWindowStart(day, booking.time);
+  const fromRangeEnd = getBookingSlotWindowEnd(day, booking.time);
+  if (
+    fromRangeStart &&
+    fromRangeEnd &&
+    !Number.isNaN(fromRangeStart.getTime()) &&
+    !Number.isNaN(fromRangeEnd.getTime())
+  ) {
+    return { start: fromRangeStart, end: fromRangeEnd };
+  }
+
+  const single = /^(\d{1,2}):(\d{2})$/.exec(booking.time.trim());
+  if (single) {
+    const eventStart = new Date(day);
+    eventStart.setHours(
+      parseInt(single[1], 10),
+      parseInt(single[2], 10),
+      0,
+      0
+    );
+    const eventEnd = new Date(eventStart);
+    eventEnd.setHours(eventEnd.getHours() + 4);
+    return { start: eventStart, end: eventEnd };
+  }
+
+  const fallbackStart = new Date(day);
+  fallbackStart.setHours(12, 0, 0, 0);
+  const fallbackEnd = new Date(fallbackStart);
+  fallbackEnd.setHours(16, 0, 0, 0);
+  return { start: fallbackStart, end: fallbackEnd };
+}
 
 /**
  * Generate ICS (iCalendar) file content for the booking
  */
 function generateICSFile(booking: Booking): string {
-  // Parse date and time
-  const bookingDate = parse(booking.date, "yyyy-MM-dd", new Date());
-  const [hours, minutes] = booking.time.split(":").map(Number);
-  const eventStart = new Date(bookingDate);
-  eventStart.setHours(hours, minutes, 0, 0);
-
-  // Event duration: 4 hours (standard service duration)
-  const eventEnd = new Date(eventStart);
-  eventEnd.setHours(eventEnd.getHours() + 4);
+  const { start: eventStart, end: eventEnd } = getBookingCalendarBounds(booking);
 
   // Format dates for ICS (YYYYMMDDTHHmmss)
   const formatICSDate = (date: Date): string => {
@@ -110,14 +144,8 @@ export async function sendBookingConfirmationEmail(
 
   const bookingUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/booking/confirmation?reference=${booking.reference}`;
 
-  // Generate calendar links (like Calendly)
-  const bookingDate = parse(booking.date, "yyyy-MM-dd", new Date());
-  const [hours, minutes] = booking.time.split(":").map(Number);
-  const eventStart = new Date(bookingDate);
-  eventStart.setHours(hours, minutes, 0, 0);
-
-  const eventEnd = new Date(eventStart);
-  eventEnd.setHours(eventEnd.getHours() + 4);
+  // Generate calendar links (like Calendly) — uses same slot window as ICS
+  const { start: eventStart, end: eventEnd } = getBookingCalendarBounds(booking);
 
   // Format dates for calendar URLs (ISO 8601)
   const formatCalendarDate = (date: Date): string => {
@@ -148,6 +176,14 @@ export async function sendBookingConfirmationEmail(
     `${booking.address}, ${booking.postalCode}`
   );
 
+  const durationMinutes = Math.max(
+    15,
+    Math.round((eventEnd.getTime() - eventStart.getTime()) / 60000)
+  );
+  const yahooDurH = Math.floor(durationMinutes / 60);
+  const yahooDurM = durationMinutes % 60;
+  const yahooDur = `${String(yahooDurH).padStart(2, "0")}${String(yahooDurM).padStart(2, "0")}`;
+
   // Google Calendar link
   const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${eventTitle}&dates=${startDate}/${endDate}&details=${eventDescription}&location=${eventLocation}`;
 
@@ -155,7 +191,7 @@ export async function sendBookingConfirmationEmail(
   const outlookCalendarUrl = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${eventTitle}&startdt=${startDate}&enddt=${endDate}&body=${eventDescription}&location=${eventLocation}`;
 
   // Yahoo Calendar link
-  const yahooCalendarUrl = `https://calendar.yahoo.com/?v=60&view=d&type=20&title=${eventTitle}&st=${startDate}&dur=${encodeURIComponent("0400")}&desc=${eventDescription}&in_loc=${eventLocation}`;
+  const yahooCalendarUrl = `https://calendar.yahoo.com/?v=60&view=d&type=20&title=${eventTitle}&st=${startDate}&dur=${encodeURIComponent(yahooDur)}&desc=${eventDescription}&in_loc=${eventLocation}`;
 
   const baseUrl = (process.env.NEXTAUTH_URL || "http://localhost:3000").replace(
     /^https?:\/\//,

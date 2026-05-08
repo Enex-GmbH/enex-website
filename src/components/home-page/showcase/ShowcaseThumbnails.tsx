@@ -55,7 +55,7 @@ export function ShowcaseThumbnails({
             }}
             role="tab"
             aria-selected={activeIndex === i}
-            aria-label={`Bild ${i + 1} anzeigen: ${item.title}`}
+            aria-label={`Bild ${i + 1} anzeigen: ${item.tag}, ${item.title}`}
             onClick={() => onSelect(i)}
             className={cn(
               "relative h-16 w-24 shrink-0 snap-center overflow-hidden rounded-xl transition-transform duration-200 hover:scale-[1.04] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring md:h-20 md:w-28",

@@ -71,13 +71,15 @@ export type ContactDetailsFormData = z.infer<typeof contactDetailsSchema>;
 export const paymentSchema = z.object({
   couponCode: z.string().optional(),
   agreedToTerms: z.boolean().refine((val) => val === true, {
-    message: "Sie müssen den AGB zustimmen",
+    message: "Bitte bestätigen Sie, dass Sie die AGB gelesen und akzeptieren.",
   }),
   agreedToPrivacy: z.boolean().refine((val) => val === true, {
-    message: "Sie müssen der Datenschutzerklärung zustimmen",
+    message:
+      "Bitte bestätigen Sie, dass Sie die Datenschutzerklärung zur Kenntnis genommen haben.",
   }),
   agreedToService: z.boolean().refine((val) => val === true, {
-    message: "Sie müssen dem Service innerhalb von 14 Tagen zustimmen",
+    message:
+      "Bitte stimmen Sie der vorzeitigen Leistungserbringung zu, oder wählen Sie einen späteren Termin.",
   }),
 });
 

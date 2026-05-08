@@ -114,7 +114,7 @@ export default function DateTimeStep() {
     }
   }, [isStepComplete, router]);
 
-  /** Paketwechsel (z. B. Basic → Exklusiv): ungültiges Datum (z. B. Sa) zurücksetzen */
+  /** Paketwechsel: Datum zurücksetzen, wenn für das Paket kein Slot mehr existiert (z. B. So) */
   useEffect(() => {
     setSelectedDate((prev) =>
       prev && !isBookingDaySelectable(prev, selectedPlan)

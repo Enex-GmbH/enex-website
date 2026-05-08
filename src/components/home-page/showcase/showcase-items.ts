@@ -2,6 +2,7 @@ import type { ShowcaseItem } from "./types";
 
 const base = "/images/showcase";
 
+/** Ordered Resim 1–9; assets: slide-01.jpg … slide-09.jpg */
 export const SHOWCASE_ITEMS: ShowcaseItem[] = [
   {
     id: "1",

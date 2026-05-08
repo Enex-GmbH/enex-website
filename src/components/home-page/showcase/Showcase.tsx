@@ -75,7 +75,7 @@ export function Showcase({ items }: ShowcaseProps) {
 
         <div className="mx-auto w-full max-w-5xl">
           <p className="sr-only" aria-live="polite">
-            {active ? `${active.title}. ${active.tag}.` : ""}
+            {active ? `${active.tag}. ${active.title}` : ""}
           </p>
 
           <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>

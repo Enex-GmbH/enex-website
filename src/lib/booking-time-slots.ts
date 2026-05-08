@@ -1,8 +1,8 @@
 /**
  * Canonical values for `bookings.time` / `time_slots.time` (and checkout UI labels).
  *
- * Basic & Premium: 4h Fenster Mo–Fr; Samstag ein kürzeres Fenster.
- * Exklusiv: 8h, ein Fenster Mo–Fr 08:00–16:00 (Samstag nicht buchbar).
+ * Basic & Premium: Mo–Fr zwei 4h-Fenster; Samstag nur ein Fenster 09:00–13:00.
+ * Exklusiv: Mo–Fr ein 8h-Fenster 08:00–16:00; Samstag wie Basic nur 09:00–13:00 (eine Option).
  * Sonntags: keine Slots (geschlossen).
  */
 
@@ -31,12 +31,12 @@ export function getExpectedBookingTimeSlots(
   if (dow === 0) return [];
 
   if (plan === "exclusive") {
-    /* 8h nur unter der Woche — blockt den Tag als ein Slot */
-    if (dow === 6) return [];
+    /* Samstag: nur ein Slot 09:00–13:00 (wie Basic/Premium) */
+    if (dow === 6) return [BOOKING_SLOT_SATURDAY];
     return [BOOKING_SLOT_EXCLUSIVE_WEEKDAY];
   }
 
-  /* basic / premium */
+  /* basic / premium: Sa nur 09:00–13:00 */
   if (dow === 6) return [BOOKING_SLOT_SATURDAY];
   return [...BOOKING_SLOTS_WEEKDAY];
 }
@@ -71,6 +71,35 @@ export function getBookingSlotWindowStart(
   if (!m) return null;
   const h = parseInt(m[1], 10);
   const min = parseInt(m[2], 10);
+  if (
+    Number.isNaN(h) ||
+    Number.isNaN(min) ||
+    h < 0 ||
+    h > 23 ||
+    min < 0 ||
+    min > 59
+  ) {
+    return null;
+  }
+  return set(startOfDay(day), {
+    hours: h,
+    minutes: min,
+    seconds: 0,
+    milliseconds: 0,
+  });
+}
+
+/**
+ * Parse end time from labels like "08:00-12:00" → end on `day` (local).
+ */
+export function getBookingSlotWindowEnd(
+  day: Date,
+  slotLabel: string
+): Date | null {
+  const m = /^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/.exec(slotLabel.trim());
+  if (!m) return null;
+  const h = parseInt(m[3], 10);
+  const min = parseInt(m[4], 10);
   if (
     Number.isNaN(h) ||
     Number.isNaN(min) ||

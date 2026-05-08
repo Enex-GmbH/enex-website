@@ -20,7 +20,7 @@ export const postalCodes: PostalCode[] = [
   { code: "75239", city: "Pfinztal" },
   { code: "75248", city: "Ötisheim" },
   { code: "75249", city: "Kieselbronn" },
-  { code: "75417", city: "Maulbronn" },
+  { code: "75417", city: "Mühlacker" },
   { code: "75443", city: "Östringen" },
 ];
 

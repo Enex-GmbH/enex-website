@@ -35,7 +35,7 @@ export function ShowcaseCarousel({
       <Image
         key={active.id}
         src={active.image}
-        alt={`${active.title} — ${active.tag}`}
+        alt={`${active.tag}: ${active.title}`}
         fill
         sizes="(max-width: 768px) 100vw, min(1100px, 100vw)"
         priority={isFirst}
@@ -58,8 +58,11 @@ export function ShowcaseCarousel({
           <span className="inline-flex w-fit rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">
             {active.tag}
           </span>
-          <p className="text-xl font-bold text-white md:text-2xl">
-            {active.title}
+          <p className="flex items-start gap-2 text-xl font-bold text-white md:text-2xl">
+            <span className="shrink-0 select-none opacity-95" aria-hidden>
+              ✨
+            </span>
+            <span>{active.title}</span>
           </p>
         </div>
       </div>

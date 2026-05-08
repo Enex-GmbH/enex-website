@@ -320,7 +320,7 @@ export default function PaymentStep() {
               className="w-4 h-4 mt-1 shrink-0"
             />
             <span className={errors.agreedToTerms ? "text-red-500" : ""}>
-              Ich akzeptiere die{" "}
+              Ich habe die{" "}
               <Link
                 href="/agb"
                 target="_blank"
@@ -329,8 +329,8 @@ export default function PaymentStep() {
                 onClick={(e) => e.stopPropagation()}
               >
                 AGB
-              </Link>
-              .
+              </Link>{" "}
+              gelesen und akzeptiere diese.
             </span>
           </label>
           {errors.agreedToTerms && (
@@ -360,7 +360,7 @@ export default function PaymentStep() {
               >
                 Datenschutzerklärung
               </Link>{" "}
-              zur Kenntnis genommen.
+              gelesen und zur Kenntnis genommen.
             </span>
           </label>
           {errors.agreedToPrivacy && (
@@ -369,20 +369,21 @@ export default function PaymentStep() {
             </p>
           )}
 
-          <div className="flex items-start gap-2">
+          <label
+            htmlFor="agreedToService"
+            className="flex cursor-pointer items-start gap-2 text-sm leading-relaxed"
+          >
             <input
               type="checkbox"
               id="agreedToService"
               {...register("agreedToService")}
-              className="w-4 h-4 mt-1"
+              className="w-4 h-4 mt-1 shrink-0"
             />
-            <label htmlFor="agreedToService" className="text-sm">
-              <span className={errors.agreedToService ? "text-red-500" : ""}>
-                Ich stimme zu, dass die Leistung innerhalb von 14 Tagen beginnen
-                kann.
-              </span>
-            </label>
-          </div>
+            <span className={errors.agreedToService ? "text-red-500" : ""}>
+              Ich stimme ausdrücklich zu, dass die Dienstleistung vor Ablauf der
+              gesetzlichen Widerrufsfrist beginnen darf.
+            </span>
+          </label>
           {errors.agreedToService && (
             <p className="text-red-500 text-sm">
               {errors.agreedToService.message}
